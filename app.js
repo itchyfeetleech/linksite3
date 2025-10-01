@@ -71,7 +71,7 @@ class WindowManager {
     windowEl.style.width = `${config.width}px`;
     windowEl.style.height = `${config.height}px`;
 
-    // Create window structure
+    // Create window structure with .NFO style
     windowEl.innerHTML = `
       <div class="resize-handle resize-n" data-direction="n"></div>
       <div class="resize-handle resize-s" data-direction="s"></div>
@@ -83,15 +83,25 @@ class WindowManager {
       <div class="resize-handle resize-sw" data-direction="sw"></div>
 
       <div class="window-header" data-window-id="${id}">
-        <span class="window-title" id="window-title-${id}">${config.title}</span>
+        <div class="window-title-wrapper">
+          <span class="window-corner">╔</span>
+          <span class="window-title" id="window-title-${id}">═══ ${config.title.toUpperCase()} ═══</span>
+          <span class="window-corner">╗</span>
+        </div>
         <div class="window-controls">
-          <button class="window-btn window-btn-minimize" aria-label="Minimize" title="Minimize">_</button>
-          <button class="window-btn window-btn-maximize" aria-label="Maximize" title="Maximize">□</button>
-          <button class="window-btn window-btn-close" aria-label="Close" title="Close">×</button>
+          <button class="window-btn window-btn-minimize" aria-label="Minimize" title="Minimize">[ _ ]</button>
+          <button class="window-btn window-btn-maximize" aria-label="Maximize" title="Maximize">[ □ ]</button>
+          <button class="window-btn window-btn-close" aria-label="Close" title="Close">[ X ]</button>
         </div>
       </div>
 
       <div class="window-body">${config.content}</div>
+
+      <div class="window-footer">
+        <span class="window-corner">╚</span>
+        <span class="window-footer-line">═══════════════════════════════════════════════════</span>
+        <span class="window-corner">╝</span>
+      </div>
     `;
 
     this.desktop.appendChild(windowEl);
@@ -703,118 +713,190 @@ class WindowManager {
   }
 
   generateConsoleContent() {
-    const bootMessages = [
-      { prompt: '[SYSTEM]', text: 'Initializing terminal environment...', delay: 0 },
-      { prompt: '[SYSTEM]', text: 'Loading kernel modules... OK', delay: 100 },
-      { prompt: '[SYSTEM]', text: 'Mounting filesystems... OK', delay: 200 },
-      { prompt: '[SYSTEM]', text: 'Starting network services... OK', delay: 300 },
-      { prompt: '[SYSTEM]', text: 'Enabling WebGL CRT renderer... OK', delay: 400 },
-      { prompt: '[SYSTEM]', text: 'System ready.', delay: 500 },
-      { prompt: '', text: '', delay: 600 },
-      { prompt: '[INFO]', text: 'Welcome to Terminal Desktop v2.0', delay: 700 },
-      { prompt: '[INFO]', text: 'CRT shader rendering: ENABLED', delay: 800 },
-      { prompt: '[INFO]', text: 'Pointer capture: ACTIVE', delay: 900 },
-      { prompt: '[INFO]', text: 'Desktop environment loaded', delay: 1000 },
-      { prompt: '', text: '', delay: 1100 },
-      { prompt: 'user@terminal:~$', text: '<span class="console-cursor"></span>', delay: 1200 }
-    ];
+    return `
+      <div class="console-output">
+        <div class="console-header">
+╔═══════════════════════════════════════════════════════════════╗
+║  TERMINAL SYSTEMS v2.1 - ANALOG INTERFACE                    ║
+║  Copyright (C) 1987-2025 Terminal Corp.                      ║
+╚═══════════════════════════════════════════════════════════════╝
+        </div>
+        <div class="console-line"><span class="console-text dim">Last login: ${new Date().toLocaleString()}</span></div>
+        <div class="console-line"></div>
+        <div class="console-line"><span class="console-prompt">root@TERMINAL:~#</span> <span class="console-text">neofetch</span></div>
+        <div class="console-line"><span class="console-text">        <span class="console-logo">
+                   -\`
+                  .o+\`             OS: Terminal Linux v2.1
+                 \`ooo/             Host: CRT Monitor 1987
+                \`+oooo:            Kernel: 5.15.0-terminal
+               \`+oooooo:           Uptime: ${this.getUptime()}
+               -+oooooo+:          Shell: bash 5.1.16
+             \`/:-:++oooo+:        Resolution: 640x480
+            \`/++++/+++++++:       DE: Terminal Desktop
+           \`/++++++++++++++:      WM: TerminalWM
+          \`/+++ooooooooooooo/\`    Theme: P3-Green [GTK2/3]
+         ./ooosssso++osssssso+\`   Icons: Phosphor [GTK2/3]
+        .oossssso-\`\`\`\`/ossssss+\`  Terminal: analog-console
+       -osssssso.      :ssssssso. CPU: Intel 8086 (1) @ 4.77MHz
+      :osssssss/        osssso+++. GPU: CGA Compatible
+     /ossssssss/        +ssssooo/- Memory: 64K / 640K
+   \`/ossssso+/:-        -:/+osssso+-
+  \`+sso+:-\`                 \`.-/+oso:
+ \`++:.                           \`-/+/
+ .\`                                 \`/
+        </span></span></div>
+        <div class="console-line"></div>
+        <div class="console-line"><span class="console-prompt">root@TERMINAL:~#</span> <span class="console-text">ls -la</span></div>
+        <div class="console-line"><span class="console-text dim">total 42</span></div>
+        <div class="console-line"><span class="console-text dim">drwxr-xr-x  5 root root  4096 Oct  1 19:87 .</span></div>
+        <div class="console-line"><span class="console-text dim">drwxr-xr-x  3 root root  4096 Oct  1 19:87 ..</span></div>
+        <div class="console-line"><span class="console-text dim">-rw-r--r--  1 root root   220 Oct  1 19:87 .bash_logout</span></div>
+        <div class="console-line"><span class="console-text dim">-rw-r--r--  1 root root  3526 Oct  1 19:87 .bashrc</span></div>
+        <div class="console-line"><span class="console-text dim">drwxr-xr-x  2 root root  4096 Oct  1 19:87 Documents</span></div>
+        <div class="console-line"><span class="console-text dim">-rwxr-xr-x  1 root root  8192 Oct  1 19:87 LINKS.EXE</span></div>
+        <div class="console-line"><span class="console-text dim">-rw-r--r--  1 root root  1337 Oct  1 19:87 README.NFO</span></div>
+        <div class="console-line"></div>
+        <div class="console-line"><span class="console-prompt">root@TERMINAL:~#</span> <span class="console-cursor"></span></div>
+      </div>
+    `;
+  }
 
-    let html = '<div class="console-output">';
-    bootMessages.forEach(msg => {
-      const dimClass = msg.prompt === '[SYSTEM]' ? ' dim' : '';
-      html += `<div class="console-line" style="animation: fadeIn 0.3s ease ${msg.delay}ms both">`;
-      if (msg.prompt) html += `<span class="console-prompt">${msg.prompt}</span>`;
-      html += `<span class="console-text${dimClass}">${msg.text}</span>`;
-      html += `</div>`;
-    });
-    html += '</div>';
-
-    return html;
+  getUptime() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    return `${hours}h ${minutes}m`;
   }
 
   generateLinksContent() {
     const links = [
-      { icon: '🐙', title: 'GitHub', desc: 'Open source projects & code', url: 'https://github.com' },
-      { icon: '🐦', title: 'Twitter', desc: 'Thoughts and updates', url: 'https://twitter.com' },
-      { icon: '💼', title: 'LinkedIn', desc: 'Professional network', url: 'https://linkedin.com' },
-      { icon: '📧', title: 'Email', desc: 'Get in touch directly', url: 'mailto:hello@example.com' },
-      { icon: '🌐', title: 'Website', desc: 'Personal portfolio', url: 'https://example.com' },
-      { icon: '📝', title: 'Blog', desc: 'Technical writing', url: 'https://example.com/blog' }
+      { key: '1', title: 'GITHUB', desc: 'SOURCE CODE REPOSITORY', url: 'https://github.com', tag: '[DEV]' },
+      { key: '2', title: 'TWITTER', desc: 'REAL-TIME UPDATES', url: 'https://twitter.com', tag: '[SOCIAL]' },
+      { key: '3', title: 'LINKEDIN', desc: 'PROFESSIONAL NETWORK', url: 'https://linkedin.com', tag: '[WORK]' },
+      { key: '4', title: 'EMAIL', desc: 'DIRECT COMMUNICATION', url: 'mailto:hello@example.com', tag: '[MAIL]' },
+      { key: '5', title: 'WEBSITE', desc: 'PERSONAL DOMAIN', url: 'https://example.com', tag: '[WEB]' },
+      { key: '6', title: 'BLOG', desc: 'TECHNICAL ARTICLES', url: 'https://example.com/blog', tag: '[DOCS]' }
     ];
 
-    let html = '<div class="links-grid">';
+    let html = `
+      <div class="links-terminal">
+        <div class="links-header">
+╔═══════════════════════════════════════════════════════════════╗
+║                    >>> LINK DATABASE <<<                      ║
+║                                                               ║
+║  Select an option to establish connection...                 ║
+╚═══════════════════════════════════════════════════════════════╝
+        </div>
+        <div class="links-menu">
+    `;
+
     links.forEach(link => {
       html += `
-        <a href="${link.url}" class="link-card" target="_blank" rel="noopener noreferrer">
-          <div class="link-card-icon">${link.icon}</div>
-          <div class="link-card-title">${link.title}</div>
-          <div class="link-card-desc">${link.desc}</div>
-        </a>
+          <a href="${link.url}" class="link-item" target="_blank" rel="noopener noreferrer">
+            <span class="link-key">[${link.key}]</span>
+            <span class="link-tag">${link.tag}</span>
+            <span class="link-title">${link.title}</span>
+            <span class="link-separator">................</span>
+            <span class="link-desc">${link.desc}</span>
+          </a>
       `;
     });
-    html += '</div>';
+
+    html += `
+        </div>
+        <div class="links-footer">
+          <div class="links-status">
+            <span class="status-indicator">●</span> CONNECTION READY
+            <span class="links-prompt">SELECT_</span>
+          </div>
+        </div>
+      </div>
+    `;
 
     return html;
   }
 
   generateStatusContent() {
     return `
-      <div class="status-grid">
-        <div class="status-section">
-          <div class="status-section-title">System Health</div>
-          <div class="status-metric">
-            <span class="status-metric-label">CPU Usage</span>
-            <span class="status-metric-value">12%</span>
-          </div>
-          <div class="status-bar"><div class="status-bar-fill" style="width: 12%"></div></div>
-
-          <div class="status-metric">
-            <span class="status-metric-label">Memory</span>
-            <span class="status-metric-value">34%</span>
-          </div>
-          <div class="status-bar"><div class="status-bar-fill" style="width: 34%"></div></div>
-
-          <div class="status-metric">
-            <span class="status-metric-label">GPU Usage</span>
-            <span class="status-metric-value">28%</span>
-          </div>
-          <div class="status-bar"><div class="status-bar-fill" style="width: 28%"></div></div>
+      <div class="status-terminal">
+        <div class="status-header">
+╔═══════════════════════════════════════════════════════════════╗
+║            >>> SYSTEM DIAGNOSTICS MODULE <<<                  ║
+║                                                               ║
+║  Real-time monitoring and analysis                           ║
+╚═══════════════════════════════════════════════════════════════╝
         </div>
 
-        <div class="status-section">
-          <div class="status-section-title">Display</div>
-          <div class="status-metric">
-            <span class="status-metric-label">Phosphor Type</span>
-            <span class="status-metric-value" id="status-phosphor">P3 Green</span>
+        <div class="status-panel">
+          <div class="status-block">
+            <div class="status-block-title">┌─ SYSTEM RESOURCES ─────────────────┐</div>
+            <div class="status-line">
+              <span class="status-label">CPU:</span>
+              <span class="status-bar-wrapper">[████████░░░░░░░░░░░░]</span>
+              <span class="status-value">12%</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">MEM:</span>
+              <span class="status-bar-wrapper">[███████████░░░░░░░░░]</span>
+              <span class="status-value">34%</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">GPU:</span>
+              <span class="status-bar-wrapper">[██████████░░░░░░░░░░]</span>
+              <span class="status-value">28%</span>
+            </div>
+            <div class="status-block-title">└────────────────────────────────────┘</div>
           </div>
-          <div class="status-metric">
-            <span class="status-metric-label">Refresh Rate</span>
-            <span class="status-metric-value">60 Hz</span>
+
+          <div class="status-block">
+            <div class="status-block-title">┌─ DISPLAY SUBSYSTEM ────────────────┐</div>
+            <div class="status-line">
+              <span class="status-label">PHOSPHOR:</span>
+              <span class="status-value" id="status-phosphor">P3-GREEN</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">REFRESH:</span>
+              <span class="status-value">60 Hz</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">SCANLINES:</span>
+              <span class="status-value status-ok">[ACTIVE]</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">BLOOM:</span>
+              <span class="status-value status-ok">[ACTIVE]</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">CURVATURE:</span>
+              <span class="status-value status-ok">[ENABLED]</span>
+            </div>
+            <div class="status-block-title">└────────────────────────────────────┘</div>
           </div>
-          <div class="status-metric">
-            <span class="status-metric-label">Scanlines</span>
-            <span class="status-metric-value">Enabled</span>
-          </div>
-          <div class="status-metric">
-            <span class="status-metric-label">Bloom</span>
-            <span class="status-metric-value">Active</span>
+
+          <div class="status-block">
+            <div class="status-block-title">┌─ NETWORK STATUS ───────────────────┐</div>
+            <div class="status-line">
+              <span class="status-label">LINK:</span>
+              <span class="status-value status-ok">[CONNECTED]</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">LATENCY:</span>
+              <span class="status-value">23ms</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">PROTOCOL:</span>
+              <span class="status-value">TCP/IP</span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">UPTIME:</span>
+              <span class="status-value" id="status-uptime">00:00:00</span>
+            </div>
+            <div class="status-block-title">└────────────────────────────────────┘</div>
           </div>
         </div>
 
-        <div class="status-section">
-          <div class="status-section-title">Network</div>
-          <div class="status-metric">
-            <span class="status-metric-label">Status</span>
-            <span class="status-metric-value">Connected</span>
-          </div>
-          <div class="status-metric">
-            <span class="status-metric-label">Latency</span>
-            <span class="status-metric-value">23ms</span>
-          </div>
-          <div class="status-metric">
-            <span class="status-metric-label">Uptime</span>
-            <span class="status-metric-value" id="status-uptime">00:00:00</span>
-          </div>
+        <div class="status-footer">
+          <span class="status-indicator blink">●</span> ALL SYSTEMS NOMINAL
         </div>
       </div>
     `;
