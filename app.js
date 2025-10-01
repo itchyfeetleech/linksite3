@@ -192,11 +192,15 @@ class WindowManager {
       const dx = e.clientX - this.dragState.startX;
       const dy = e.clientY - this.dragState.startY;
 
-      window.state.x = this.dragState.initialX + dx;
-      window.state.y = this.dragState.initialY + dy;
+      const newX = this.dragState.initialX + dx;
+      const newY = this.dragState.initialY + dy;
 
-      // Use transform for smoother animation
-      window.element.style.transform = `translate(${dx}px, ${dy}px)`;
+      // Update position directly for smooth dragging
+      window.element.style.left = `${newX}px`;
+      window.element.style.top = `${newY}px`;
+
+      window.state.x = newX;
+      window.state.y = newY;
     };
 
     const onPointerUp = (e) => {
@@ -208,17 +212,6 @@ class WindowManager {
       if (header.hasPointerCapture(e.pointerId)) {
         header.releasePointerCapture(e.pointerId);
       }
-
-      // Apply final position
-      const dx = e.clientX - this.dragState.startX;
-      const dy = e.clientY - this.dragState.startY;
-
-      window.state.x = this.dragState.initialX + dx;
-      window.state.y = this.dragState.initialY + dy;
-
-      window.element.style.transform = '';
-      window.element.style.left = `${window.state.x}px`;
-      window.element.style.top = `${window.state.y}px`;
 
       header.style.cursor = '';
       this.dragState = null;

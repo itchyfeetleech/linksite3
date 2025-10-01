@@ -8,7 +8,8 @@
       "Bash(gh repo create:*)",
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nMajor upgrade: Modern CRT rendering with pointer capture\n\n**Core Improvements:**\n- ✨ Proper pointer capture API for drag/resize (setPointerCapture/releasePointerCapture)\n- 🎨 WebGL-based CRT shader with barrel distortion, chromatic aberration, bloom\n- 🌟 Smooth animations: window open/close/minimize/maximize with cubic-bezier easing\n- ⚡ GPU-accelerated rendering with will-change and transform optimizations\n- 🎯 Larger touch-friendly resize handles (6px edges, 12px corners)\n- 🎭 Particle effects on window interactions\n\n**WebGL CRT Effects:**\n- Authentic screen curvature (barrel distortion)\n- Chromatic aberration simulation\n- Phosphor glow & persistence\n- Scanlines & shadow mask\n- Bloom/halation post-processing\n- Dynamic refresh & flicker\n- Vignette & noise\n\n**Enhanced Window System:**\n- Pointer events replace mouse events for better touch/stylus support\n- Transform-based dragging for 60fps smoothness\n- Animated minimize to taskbar\n- Spring-bounce entrance animations\n- Proper cursor feedback (grab/grabbing)\n- Touch-action: none prevents scroll conflicts\n\n**Modern CSS:**\n- Backdrop-filter with saturation boost\n- Will-change hints for compositor\n- Particle burst animations\n- Improved glassmorphism\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

@@ -77,7 +77,28 @@
   <!-- Particle effects container -->
   <div id="particles" class="particles"></div>
 
+  <!-- CRT Effects Overlay -->
+  <div class="crt-effects">
+    <div class="crt-scanline-overlay"></div>
+    <div class="crt-flicker"></div>
+    <div class="crt-vhs-tracking"></div>
+  </div>
+
+  <!-- Boot Overlay -->
+  <div id="boot-overlay" class="boot-overlay">
+    <div class="boot-screen">
+      <div class="boot-scanline"></div>
+      <div class="boot-content"></div>
+    </div>
+  </div>
+
   <script src="crt-shader.js"></script>
+  <script src="effects.js"></script>
   <script src="app.js"></script>
+
+  <!-- Optional: Ambient Audio -->
+  <audio id="ambient-hum" loop>
+    <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+  </audio>
 </body>
 </html>
