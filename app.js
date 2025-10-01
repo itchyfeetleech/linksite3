@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   WINDOW MANAGER
+   MODERN WINDOW MANAGER WITH POINTER CAPTURE
    ═══════════════════════════════════════════════════════════════ */
 
 class WindowManager {
@@ -9,6 +9,10 @@ class WindowManager {
     this.zIndexCounter = 1000;
     this.desktop = document.getElementById('desktop');
     this.taskbarWindows = document.querySelector('.taskbar-windows');
+
+    // Pointer capture state
+    this.dragState = null;
+    this.resizeState = null;
 
     this.initializeWindows();
     this.setupEventListeners();
@@ -69,16 +73,16 @@ class WindowManager {
 
     // Create window structure
     windowEl.innerHTML = `
-      <div class="resize-handle resize-n"></div>
-      <div class="resize-handle resize-s"></div>
-      <div class="resize-handle resize-e"></div>
-      <div class="resize-handle resize-w"></div>
-      <div class="resize-handle resize-ne"></div>
-      <div class="resize-handle resize-nw"></div>
-      <div class="resize-handle resize-se"></div>
-      <div class="resize-handle resize-sw"></div>
+      <div class="resize-handle resize-n" data-direction="n"></div>
+      <div class="resize-handle resize-s" data-direction="s"></div>
+      <div class="resize-handle resize-e" data-direction="e"></div>
+      <div class="resize-handle resize-w" data-direction="w"></div>
+      <div class="resize-handle resize-ne" data-direction="ne"></div>
+      <div class="resize-handle resize-nw" data-direction="nw"></div>
+      <div class="resize-handle resize-se" data-direction="se"></div>
+      <div class="resize-handle resize-sw" data-direction="sw"></div>
 
-      <div class="window-header">
+      <div class="window-header" data-window-id="${id}">
         <span class="window-title" id="window-title-${id}">${config.title}</span>
         <div class="window-controls">
           <button class="window-btn window-btn-minimize" aria-label="Minimize" title="Minimize">_</button>
@@ -105,6 +109,13 @@ class WindowManager {
         maximized: false,
         minimized: false,
         closed: false
+      },
+      // Animation state
+      animation: {
+        targetX: config.x,
+        targetY: config.y,
+        targetWidth: config.width,
+        targetHeight: config.height
       }
     });
 
@@ -121,55 +132,99 @@ class WindowManager {
     // Clamp to viewport
     this.clampToViewport(id);
 
+    // Add entrance animation
+    this.animateWindowEntrance(windowEl);
+
     return id;
+  }
+
+  animateWindowEntrance(windowEl) {
+    windowEl.style.opacity = '0';
+    windowEl.style.transform = 'scale(0.95) translateY(-10px)';
+
+    requestAnimationFrame(() => {
+      windowEl.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      windowEl.style.opacity = '1';
+      windowEl.style.transform = 'scale(1) translateY(0)';
+
+      setTimeout(() => {
+        windowEl.style.transition = '';
+      }, 300);
+    });
   }
 
   setupWindowDrag(id) {
     const window = this.windows.get(id);
     const header = window.element.querySelector('.window-header');
 
-    let isDragging = false;
-    let startX, startY, initialX, initialY;
-
-    const onMouseDown = (e) => {
+    const onPointerDown = (e) => {
+      // Ignore if clicking on buttons
       if (e.target.closest('.window-controls') || e.target.closest('.window-btn')) return;
+      if (window.state.maximized) return;
 
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      initialX = window.state.x;
-      initialY = window.state.y;
-
-      document.body.style.cursor = 'move';
-      window.element.style.userSelect = 'none';
-
-      this.focusWindow(id);
       e.preventDefault();
+
+      // Set pointer capture
+      header.setPointerCapture(e.pointerId);
+
+      this.dragState = {
+        id,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: window.state.x,
+        initialY: window.state.y,
+        element: header
+      };
+
+      header.style.cursor = 'grabbing';
+      this.focusWindow(id);
+
+      // Create drag particle effect
+      this.createParticleEffect(e.clientX, e.clientY);
     };
 
-    const onMouseMove = (e) => {
-      if (!isDragging) return;
+    const onPointerMove = (e) => {
+      if (!this.dragState || this.dragState.id !== id) return;
 
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
+      e.preventDefault();
 
-      window.state.x = initialX + dx;
-      window.state.y = initialY + dy;
+      const dx = e.clientX - this.dragState.startX;
+      const dy = e.clientY - this.dragState.startY;
 
-      if (!window.state.maximized) {
-        window.element.style.left = `${window.state.x}px`;
-        window.element.style.top = `${window.state.y}px`;
-      }
+      window.state.x = this.dragState.initialX + dx;
+      window.state.y = this.dragState.initialY + dy;
+
+      // Use transform for smoother animation
+      window.element.style.transform = `translate(${dx}px, ${dy}px)`;
     };
 
-    const onMouseUp = () => {
-      if (isDragging) {
-        isDragging = false;
-        document.body.style.cursor = '';
-        window.element.style.userSelect = '';
-        this.clampToViewport(id);
-        this.saveState();
+    const onPointerUp = (e) => {
+      if (!this.dragState || this.dragState.id !== id) return;
+
+      e.preventDefault();
+
+      // Release pointer capture
+      if (header.hasPointerCapture(e.pointerId)) {
+        header.releasePointerCapture(e.pointerId);
       }
+
+      // Apply final position
+      const dx = e.clientX - this.dragState.startX;
+      const dy = e.clientY - this.dragState.startY;
+
+      window.state.x = this.dragState.initialX + dx;
+      window.state.y = this.dragState.initialY + dy;
+
+      window.element.style.transform = '';
+      window.element.style.left = `${window.state.x}px`;
+      window.element.style.top = `${window.state.y}px`;
+
+      header.style.cursor = '';
+      this.dragState = null;
+
+      this.clampToViewport(id);
+      this.saveState();
     };
 
     // Double-click to maximize
@@ -177,83 +232,102 @@ class WindowManager {
       this.toggleMaximize(id);
     });
 
-    header.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    header.addEventListener('pointerdown', onPointerDown);
+    header.addEventListener('pointermove', onPointerMove);
+    header.addEventListener('pointerup', onPointerUp);
+    header.addEventListener('pointercancel', onPointerUp);
   }
 
   setupWindowResize(id) {
     const window = this.windows.get(id);
     const handles = window.element.querySelectorAll('.resize-handle');
 
-    let isResizing = false;
-    let resizeHandle = null;
-    let startX, startY, startWidth, startHeight, startLeft, startTop;
+    handles.forEach(handle => {
+      const direction = handle.dataset.direction;
 
-    const onMouseDown = (e, handle) => {
-      isResizing = true;
-      resizeHandle = handle;
-      startX = e.clientX;
-      startY = e.clientY;
-      startWidth = window.element.offsetWidth;
-      startHeight = window.element.offsetHeight;
-      startLeft = window.state.x;
-      startTop = window.state.y;
+      const onPointerDown = (e) => {
+        if (window.state.maximized) return;
 
-      window.element.style.userSelect = 'none';
-      this.focusWindow(id);
-      e.preventDefault();
-      e.stopPropagation();
-    };
+        e.preventDefault();
+        e.stopPropagation();
 
-    const onMouseMove = (e) => {
-      if (!isResizing || window.state.maximized) return;
+        // Set pointer capture
+        handle.setPointerCapture(e.pointerId);
 
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
+        this.resizeState = {
+          id,
+          pointerId: e.pointerId,
+          direction,
+          startX: e.clientX,
+          startY: e.clientY,
+          initialX: window.state.x,
+          initialY: window.state.y,
+          initialWidth: window.element.offsetWidth,
+          initialHeight: window.element.offsetHeight,
+          element: handle
+        };
 
-      const classes = resizeHandle.className;
+        this.focusWindow(id);
+      };
 
-      if (classes.includes('resize-e')) {
-        window.element.style.width = `${Math.max(280, startWidth + dx)}px`;
-      }
-      if (classes.includes('resize-w')) {
-        const newWidth = Math.max(280, startWidth - dx);
+      const onPointerMove = (e) => {
+        if (!this.resizeState || this.resizeState.id !== id) return;
+
+        e.preventDefault();
+
+        const dx = e.clientX - this.resizeState.startX;
+        const dy = e.clientY - this.resizeState.startY;
+
+        let newWidth = this.resizeState.initialWidth;
+        let newHeight = this.resizeState.initialHeight;
+        let newX = this.resizeState.initialX;
+        let newY = this.resizeState.initialY;
+
+        // Calculate new dimensions based on resize direction
+        if (direction.includes('e')) newWidth = Math.max(280, this.resizeState.initialWidth + dx);
+        if (direction.includes('w')) {
+          newWidth = Math.max(280, this.resizeState.initialWidth - dx);
+          newX = this.resizeState.initialX + (this.resizeState.initialWidth - newWidth);
+        }
+        if (direction.includes('s')) newHeight = Math.max(180, this.resizeState.initialHeight + dy);
+        if (direction.includes('n')) {
+          newHeight = Math.max(180, this.resizeState.initialHeight - dy);
+          newY = this.resizeState.initialY + (this.resizeState.initialHeight - newHeight);
+        }
+
+        // Apply new dimensions
         window.element.style.width = `${newWidth}px`;
-        window.element.style.left = `${startLeft + (startWidth - newWidth)}px`;
-      }
-      if (classes.includes('resize-s')) {
-        window.element.style.height = `${Math.max(180, startHeight + dy)}px`;
-      }
-      if (classes.includes('resize-n')) {
-        const newHeight = Math.max(180, startHeight - dy);
         window.element.style.height = `${newHeight}px`;
-        window.element.style.top = `${startTop + (startHeight - newHeight)}px`;
-      }
+        window.element.style.left = `${newX}px`;
+        window.element.style.top = `${newY}px`;
 
-      // Update state
-      window.state.width = window.element.offsetWidth;
-      window.state.height = window.element.offsetHeight;
-      window.state.x = parseInt(window.element.style.left);
-      window.state.y = parseInt(window.element.style.top);
-    };
+        window.state.width = newWidth;
+        window.state.height = newHeight;
+        window.state.x = newX;
+        window.state.y = newY;
+      };
 
-    const onMouseUp = () => {
-      if (isResizing) {
-        isResizing = false;
-        resizeHandle = null;
-        window.element.style.userSelect = '';
+      const onPointerUp = (e) => {
+        if (!this.resizeState || this.resizeState.id !== id) return;
+
+        e.preventDefault();
+
+        // Release pointer capture
+        if (handle.hasPointerCapture(e.pointerId)) {
+          handle.releasePointerCapture(e.pointerId);
+        }
+
+        this.resizeState = null;
+
         this.clampToViewport(id);
         this.saveState();
-      }
-    };
+      };
 
-    handles.forEach(handle => {
-      handle.addEventListener('mousedown', (e) => onMouseDown(e, handle));
+      handle.addEventListener('pointerdown', onPointerDown);
+      handle.addEventListener('pointermove', onPointerMove);
+      handle.addEventListener('pointerup', onPointerUp);
+      handle.addEventListener('pointercancel', onPointerUp);
     });
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
   }
 
   setupWindowButtons(id) {
@@ -263,15 +337,26 @@ class WindowManager {
     const maximizeBtn = window.element.querySelector('.window-btn-maximize');
     const closeBtn = window.element.querySelector('.window-btn-close');
 
-    minimizeBtn.addEventListener('click', () => this.minimizeWindow(id));
-    maximizeBtn.addEventListener('click', () => this.toggleMaximize(id));
-    closeBtn.addEventListener('click', () => this.closeWindow(id));
+    minimizeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.minimizeWindow(id);
+    });
+
+    maximizeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleMaximize(id);
+    });
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeWindow(id);
+    });
   }
 
   setupWindowFocus(id) {
     const window = this.windows.get(id);
 
-    window.element.addEventListener('mousedown', () => {
+    window.element.addEventListener('pointerdown', () => {
       this.focusWindow(id);
     });
 
@@ -335,9 +420,8 @@ class WindowManager {
           break;
 
         case 'Enter':
-          // Activate primary action (focus first interactive element)
-          const firstButton = window.element.querySelector('button:not(.window-btn), a, input, select, textarea');
-          if (firstButton) firstButton.focus();
+          const firstInteractive = window.element.querySelector('button:not(.window-btn), a, input, select, textarea');
+          if (firstInteractive) firstInteractive.focus();
           e.preventDefault();
           break;
 
@@ -359,32 +443,78 @@ class WindowManager {
 
     this.focusedWindow = id;
 
-    // Update z-index
+    // Update z-index with animation
     this.windows.forEach((win, winId) => {
       if (winId === id) {
         win.element.style.zIndex = ++this.zIndexCounter;
+        win.element.style.filter = 'brightness(1.05)';
+        setTimeout(() => {
+          win.element.style.filter = '';
+        }, 150);
       }
     });
 
-    // Update taskbar indicators
     this.updateTaskbarIndicators();
-
-    // Update debug overlay
     this.updateDebugOverlay();
   }
 
   minimizeWindow(id) {
     const window = this.windows.get(id);
-    window.state.minimized = true;
-    window.element.classList.add('minimized');
-    this.updateTaskbarIndicators();
-    this.saveState();
+
+    // Animate minimization
+    const indicator = this.taskbarWindows.querySelector(`[data-window-id="${id}"]`);
+    if (indicator) {
+      const rect = indicator.getBoundingClientRect();
+      const winRect = window.element.getBoundingClientRect();
+
+      window.element.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease';
+      window.element.style.transformOrigin = 'center bottom';
+
+      const scaleX = rect.width / winRect.width;
+      const scaleY = rect.height / winRect.height;
+      const translateX = rect.left - winRect.left + (rect.width - winRect.width) / 2;
+      const translateY = rect.top - winRect.top + (rect.height - winRect.height) / 2;
+
+      window.element.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+      window.element.style.opacity = '0';
+
+      setTimeout(() => {
+        window.state.minimized = true;
+        window.element.classList.add('minimized');
+        window.element.style.transition = '';
+        window.element.style.transform = '';
+        window.element.style.opacity = '';
+        this.updateTaskbarIndicators();
+        this.saveState();
+      }, 300);
+    } else {
+      window.state.minimized = true;
+      window.element.classList.add('minimized');
+      this.updateTaskbarIndicators();
+      this.saveState();
+    }
   }
 
   restoreWindow(id) {
     const window = this.windows.get(id);
     window.state.minimized = false;
     window.element.classList.remove('minimized');
+
+    // Animate restoration
+    window.element.style.opacity = '0';
+    window.element.style.transform = 'scale(0.95)';
+
+    requestAnimationFrame(() => {
+      window.element.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      window.element.style.opacity = '1';
+      window.element.style.transform = 'scale(1)';
+
+      setTimeout(() => {
+        window.element.style.transition = '';
+        window.element.style.transform = '';
+      }, 300);
+    });
+
     this.focusWindow(id);
     this.updateTaskbarIndicators();
     this.saveState();
@@ -393,25 +523,41 @@ class WindowManager {
   toggleMaximize(id) {
     const window = this.windows.get(id);
     window.state.maximized = !window.state.maximized;
+
+    window.element.style.transition = 'all 0.25s cubic-bezier(0.4, 0.0, 0.2, 1)';
     window.element.classList.toggle('maximized');
 
     if (!window.state.maximized) {
-      // Restore previous size
       window.element.style.left = `${window.state.x}px`;
       window.element.style.top = `${window.state.y}px`;
       window.element.style.width = `${window.state.width}px`;
       window.element.style.height = `${window.state.height}px`;
     }
 
+    setTimeout(() => {
+      window.element.style.transition = '';
+    }, 250);
+
     this.saveState();
   }
 
   closeWindow(id) {
     const window = this.windows.get(id);
-    window.state.closed = true;
-    window.element.style.display = 'none';
-    this.updateTaskbarIndicators();
-    this.saveState();
+
+    // Animate close
+    window.element.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+    window.element.style.transform = 'scale(0.9)';
+    window.element.style.opacity = '0';
+
+    setTimeout(() => {
+      window.state.closed = true;
+      window.element.style.display = 'none';
+      window.element.style.transition = '';
+      window.element.style.transform = '';
+      window.element.style.opacity = '';
+      this.updateTaskbarIndicators();
+      this.saveState();
+    }, 200);
   }
 
   openWindow(id) {
@@ -422,6 +568,9 @@ class WindowManager {
     window.state.minimized = false;
     window.element.style.display = 'flex';
     window.element.classList.remove('minimized');
+
+    this.animateWindowEntrance(window.element);
+
     this.focusWindow(id);
     window.element.focus();
     this.updateTaskbarIndicators();
@@ -438,7 +587,7 @@ class WindowManager {
     };
 
     const el = window.element;
-    const minVisible = 40; // Minimum pixels that must be visible
+    const minVisible = 40;
 
     window.state.x = Math.max(-el.offsetWidth + minVisible, Math.min(viewport.width - minVisible, window.state.x));
     window.state.y = Math.max(0, Math.min(viewport.height - minVisible, window.state.y));
@@ -499,6 +648,17 @@ class WindowManager {
     });
   }
 
+  createParticleEffect(x, y) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = `${x}px`;
+    particle.style.top = `${y}px`;
+
+    document.getElementById('particles').appendChild(particle);
+
+    setTimeout(() => particle.remove(), 1000);
+  }
+
   saveState() {
     const state = {};
     this.windows.forEach((window, id) => {
@@ -544,26 +704,26 @@ class WindowManager {
   }
 
   setupEventListeners() {
-    // Handle viewport resize
     window.addEventListener('resize', () => {
       this.clampAllWindows();
     });
   }
 
-  // Content generators
   generateConsoleContent() {
     const bootMessages = [
       { prompt: '[SYSTEM]', text: 'Initializing terminal environment...', delay: 0 },
       { prompt: '[SYSTEM]', text: 'Loading kernel modules... OK', delay: 100 },
       { prompt: '[SYSTEM]', text: 'Mounting filesystems... OK', delay: 200 },
       { prompt: '[SYSTEM]', text: 'Starting network services... OK', delay: 300 },
-      { prompt: '[SYSTEM]', text: 'System ready.', delay: 400 },
-      { prompt: '', text: '', delay: 500 },
-      { prompt: '[INFO]', text: 'Welcome to Terminal Desktop v1.0', delay: 600 },
-      { prompt: '[INFO]', text: 'CRT phosphor rendering: ENABLED', delay: 700 },
-      { prompt: '[INFO]', text: 'Desktop environment loaded', delay: 800 },
-      { prompt: '', text: '', delay: 900 },
-      { prompt: 'user@terminal:~$', text: '<span class="console-cursor"></span>', delay: 1000 }
+      { prompt: '[SYSTEM]', text: 'Enabling WebGL CRT renderer... OK', delay: 400 },
+      { prompt: '[SYSTEM]', text: 'System ready.', delay: 500 },
+      { prompt: '', text: '', delay: 600 },
+      { prompt: '[INFO]', text: 'Welcome to Terminal Desktop v2.0', delay: 700 },
+      { prompt: '[INFO]', text: 'CRT shader rendering: ENABLED', delay: 800 },
+      { prompt: '[INFO]', text: 'Pointer capture: ACTIVE', delay: 900 },
+      { prompt: '[INFO]', text: 'Desktop environment loaded', delay: 1000 },
+      { prompt: '', text: '', delay: 1100 },
+      { prompt: 'user@terminal:~$', text: '<span class="console-cursor"></span>', delay: 1200 }
     ];
 
     let html = '<div class="console-output">';
@@ -622,10 +782,10 @@ class WindowManager {
           <div class="status-bar"><div class="status-bar-fill" style="width: 34%"></div></div>
 
           <div class="status-metric">
-            <span class="status-metric-label">Disk Usage</span>
-            <span class="status-metric-value">67%</span>
+            <span class="status-metric-label">GPU Usage</span>
+            <span class="status-metric-value">28%</span>
           </div>
-          <div class="status-bar"><div class="status-bar-fill" style="width: 67%"></div></div>
+          <div class="status-bar"><div class="status-bar-fill" style="width: 28%"></div></div>
         </div>
 
         <div class="status-section">
@@ -641,6 +801,10 @@ class WindowManager {
           <div class="status-metric">
             <span class="status-metric-label">Scanlines</span>
             <span class="status-metric-value">Enabled</span>
+          </div>
+          <div class="status-metric">
+            <span class="status-metric-label">Bloom</span>
+            <span class="status-metric-value">Active</span>
           </div>
         </div>
 
@@ -711,7 +875,6 @@ class StartMenu {
       </button>
     `).join('');
 
-    // Setup item click handlers
     this.menuItems.querySelectorAll('.start-menu-item').forEach(item => {
       item.addEventListener('click', () => {
         const appId = item.dataset.appId;
@@ -726,7 +889,6 @@ class StartMenu {
       this.toggle();
     });
 
-    // Keyboard navigation
     this.menu.addEventListener('keydown', (e) => {
       const items = Array.from(this.menuItems.querySelectorAll('.start-menu-item'));
 
@@ -762,7 +924,6 @@ class StartMenu {
       }
     });
 
-    // Close on outside click
     document.addEventListener('click', (e) => {
       if (this.isOpen &&
           !this.menu.contains(e.target) &&
@@ -781,7 +942,20 @@ class StartMenu {
     this.menu.hidden = false;
     this.startButton.setAttribute('aria-expanded', 'true');
 
-    // Focus first item
+    // Animate entrance
+    this.menu.style.opacity = '0';
+    this.menu.style.transform = 'translateY(10px)';
+
+    requestAnimationFrame(() => {
+      this.menu.style.transition = 'opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      this.menu.style.opacity = '1';
+      this.menu.style.transform = 'translateY(0)';
+
+      setTimeout(() => {
+        this.menu.style.transition = '';
+      }, 200);
+    });
+
     const firstItem = this.menuItems.querySelector('.start-menu-item');
     if (firstItem) {
       this.focusedIndex = 0;
@@ -790,11 +964,19 @@ class StartMenu {
   }
 
   close() {
-    this.isOpen = false;
-    this.menu.hidden = true;
-    this.startButton.setAttribute('aria-expanded', 'false');
-    this.startButton.focus();
-    this.focusedIndex = -1;
+    this.menu.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+    this.menu.style.opacity = '0';
+    this.menu.style.transform = 'translateY(10px)';
+
+    setTimeout(() => {
+      this.isOpen = false;
+      this.menu.hidden = true;
+      this.menu.style.transition = '';
+      this.menu.style.transform = '';
+      this.startButton.setAttribute('aria-expanded', 'false');
+      this.startButton.focus();
+      this.focusedIndex = -1;
+    }, 150);
   }
 }
 
@@ -834,17 +1016,14 @@ class Taskbar {
       const themeLabel = this.themeButton.querySelector('.status-theme');
       themeLabel.textContent = newTheme === 'green' ? 'GRN' : 'AMB';
 
-      // Update status monitor
       const statusPhosphor = document.getElementById('status-phosphor');
       if (statusPhosphor) {
         statusPhosphor.textContent = newTheme === 'green' ? 'P3 Green' : 'P22 Amber';
       }
 
-      // Update debug overlay
       document.getElementById('debug-theme').textContent = newTheme;
     });
 
-    // Load saved theme
     const savedTheme = localStorage.getItem('theme') || 'green';
     document.body.dataset.theme = savedTheme;
     const themeLabel = this.themeButton.querySelector('.status-theme');
@@ -878,7 +1057,6 @@ class Taskbar {
   }
 
   setupDebugToggle() {
-    // Alt+D keyboard shortcut
     document.addEventListener('keydown', (e) => {
       if (e.altKey && e.key === 'd') {
         this.toggleDebug();
@@ -886,8 +1064,7 @@ class Taskbar {
       }
     });
 
-    // Long-press on taskbar
-    this.taskbar.addEventListener('mousedown', (e) => {
+    this.taskbar.addEventListener('pointerdown', (e) => {
       if (e.target === this.taskbar || e.target.closest('.taskbar')) {
         this.longPressTimer = setTimeout(() => {
           this.toggleDebug();
@@ -895,28 +1072,14 @@ class Taskbar {
       }
     });
 
-    this.taskbar.addEventListener('mouseup', () => {
+    this.taskbar.addEventListener('pointerup', () => {
       if (this.longPressTimer) {
         clearTimeout(this.longPressTimer);
         this.longPressTimer = null;
       }
     });
 
-    this.taskbar.addEventListener('mouseleave', () => {
-      if (this.longPressTimer) {
-        clearTimeout(this.longPressTimer);
-        this.longPressTimer = null;
-      }
-    });
-
-    // Touch long-press
-    this.taskbar.addEventListener('touchstart', (e) => {
-      this.longPressTimer = setTimeout(() => {
-        this.toggleDebug();
-      }, 800);
-    });
-
-    this.taskbar.addEventListener('touchend', () => {
+    this.taskbar.addEventListener('pointercancel', () => {
       if (this.longPressTimer) {
         clearTimeout(this.longPressTimer);
         this.longPressTimer = null;
@@ -925,8 +1088,24 @@ class Taskbar {
   }
 
   toggleDebug() {
-    this.debugOverlay.hidden = !this.debugOverlay.hidden;
+    const isHidden = this.debugOverlay.hidden;
+    this.debugOverlay.hidden = !isHidden;
+
     if (!this.debugOverlay.hidden) {
+      // Animate entrance
+      this.debugOverlay.style.opacity = '0';
+      this.debugOverlay.style.transform = 'translateX(20px)';
+
+      requestAnimationFrame(() => {
+        this.debugOverlay.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        this.debugOverlay.style.opacity = '1';
+        this.debugOverlay.style.transform = 'translateX(0)';
+
+        setTimeout(() => {
+          this.debugOverlay.style.transition = '';
+        }, 200);
+      });
+
       this.updateDebugFPS();
     }
   }
@@ -955,7 +1134,6 @@ class Taskbar {
   }
 
   setupStatusMonitor() {
-    // Update uptime counter
     const startTime = Date.now();
 
     setInterval(() => {
@@ -981,13 +1159,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const startMenu = new StartMenu(windowManager);
   const taskbar = new Taskbar(windowManager);
 
-  // Focus first visible window
   const firstWindow = Array.from(windowManager.windows.values()).find(w => !w.state.closed);
   if (firstWindow) {
     windowManager.focusWindow(firstWindow.id);
   }
 
-  // Add CSS animation for fade-in
+  // Add CSS animation
   const style = document.createElement('style');
   style.textContent = `
     @keyframes fadeIn {

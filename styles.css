@@ -81,79 +81,65 @@ html, body {
 
 body {
   position: relative;
-  background:
-    radial-gradient(ellipse at center, rgba(0, 255, 65, 0.02) 0%, transparent 70%),
-    url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPjxyZWN0IHdpZHRoPSI1IiBoZWlnaHQ9IjUiIGZpbGw9IiMwYTBlMGEiLz48cGF0aCBkPSJNMCAwTDUgNU0tMSA1TDUgLTFNLTEgMEw1IDZNMCA1TDUgME01IDVMNSAtMU0tMSA1TDUgNSIgc3Ryb2tlPSIjMTExNTExIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4xIi8+PC9zdmc+'),
-    var(--bg-black);
-  background-attachment: fixed;
+  background: var(--bg-black);
+  will-change: background;
+}
+
+/* WebGL CRT Canvas Layer */
+.crt-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 0.3;
+}
+
+/* Content Layer */
+.content-layer {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CRT OVERLAY EFFECTS
+   PARTICLE EFFECTS
    ═══════════════════════════════════════════════════════════════ */
-.crt-overlay {
+.particles {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9999;
-  mix-blend-mode: screen;
-  opacity: var(--crt-intensity);
+  z-index: 9998;
 }
 
-.crt-scanlines {
+.particle {
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    rgba(0, 0, 0, var(--scanline-opacity)) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-  animation: scanlines 8s linear infinite;
+  width: 4px;
+  height: 4px;
+  background: var(--phosphor-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--glow-color);
+  animation: particle-burst 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
 }
 
-@keyframes scanlines {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(4px); }
+@keyframes particle-burst {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx, 20px), var(--ty, -20px)) scale(0);
+    opacity: 0;
+  }
 }
 
-.crt-slotmask {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    to right,
-    rgba(0, 0, 0, var(--slotmask-opacity)) 0px,
-    transparent 1px,
-    transparent 3px
-  );
-}
-
-.crt-vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 40%,
-    rgba(0, 0, 0, var(--vignette-strength)) 100%
-  );
-}
-
-.crt-static {
-  position: absolute;
-  inset: 0;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjciIG51bU9jdGF2ZXM9IjQiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsdGVyPSJ1cmwoI24pIiBvcGFjaXR5PSIuMDUiLz48L3N2Zz4=');
-  opacity: var(--static-opacity);
-  animation: static 0.2s steps(4) infinite;
-}
-
-@keyframes static {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-2%, 2%); }
-  50% { transform: translate(2%, -2%); }
-  75% { transform: translate(-2%, -2%); }
-  100% { transform: translate(2%, 2%); }
-}
+.particle:nth-child(1) { --tx: 15px; --ty: -15px; animation-delay: 0ms; }
+.particle:nth-child(2) { --tx: -15px; --ty: -15px; animation-delay: 50ms; }
+.particle:nth-child(3) { --tx: 10px; --ty: -20px; animation-delay: 100ms; }
 
 /* ═══════════════════════════════════════════════════════════════
    DESKTOP ENVIRONMENT
@@ -182,9 +168,11 @@ body {
     var(--shadow-glow),
     0 12px 40px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  transition: box-shadow 0.2s ease, transform 0.1s ease;
+  backdrop-filter: blur(12px) saturate(180%);
   overflow: hidden;
+  will-change: transform, box-shadow;
+  transform-origin: center;
+  cursor: default;
 }
 
 .window:focus-within {
@@ -216,9 +204,14 @@ body {
   padding: 0 var(--space-md);
   background: linear-gradient(to bottom, rgba(0, 255, 65, 0.08), rgba(0, 255, 65, 0.02));
   border-bottom: 1px solid var(--phosphor-primary);
-  cursor: move;
+  cursor: grab;
   user-select: none;
   flex-shrink: 0;
+  touch-action: none;
+}
+
+.window-header:active {
+  cursor: grabbing;
 }
 
 .window-title {
@@ -296,16 +289,17 @@ body {
 .resize-handle {
   position: absolute;
   z-index: 10;
+  touch-action: none;
 }
 
-.resize-n { top: 0; left: 0; right: 0; height: 4px; cursor: ns-resize; }
-.resize-s { bottom: 0; left: 0; right: 0; height: 4px; cursor: ns-resize; }
-.resize-e { right: 0; top: 0; bottom: 0; width: 4px; cursor: ew-resize; }
-.resize-w { left: 0; top: 0; bottom: 0; width: 4px; cursor: ew-resize; }
-.resize-ne { top: 0; right: 0; width: 8px; height: 8px; cursor: nesw-resize; }
-.resize-nw { top: 0; left: 0; width: 8px; height: 8px; cursor: nwse-resize; }
-.resize-se { bottom: 0; right: 0; width: 8px; height: 8px; cursor: nwse-resize; }
-.resize-sw { bottom: 0; left: 0; width: 8px; height: 8px; cursor: nesw-resize; }
+.resize-n { top: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+.resize-s { bottom: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+.resize-e { right: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.resize-w { left: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.resize-ne { top: 0; right: 0; width: 12px; height: 12px; cursor: nesw-resize; }
+.resize-nw { top: 0; left: 0; width: 12px; height: 12px; cursor: nwse-resize; }
+.resize-se { bottom: 0; right: 0; width: 12px; height: 12px; cursor: nwse-resize; }
+.resize-sw { bottom: 0; left: 0; width: 12px; height: 12px; cursor: nesw-resize; }
 
 /* ═══════════════════════════════════════════════════════════════
    TASKBAR
