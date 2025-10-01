@@ -178,23 +178,11 @@ class CRTEffects {
   }
 
   setupPhosphorTrails() {
-    // Add phosphor glow to all text
-    document.addEventListener('mousemove', (e) => {
-      if (Math.random() < 0.3) {
-        this.createPhosphorTrail(e.clientX, e.clientY);
-      }
-    });
+    // Disabled - too distracting
   }
 
   createPhosphorTrail(x, y) {
-    const trail = document.createElement('div');
-    trail.className = 'phosphor-trail';
-    trail.style.left = `${x}px`;
-    trail.style.top = `${y}px`;
-
-    document.body.appendChild(trail);
-
-    setTimeout(() => trail.remove(), 500);
+    // Disabled
   }
 
   setupBurnIn() {

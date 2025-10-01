@@ -183,19 +183,15 @@ class WindowManager {
         startX: e.clientX,
         startY: e.clientY,
         initialX: window.state.x,
-        initialY: window.state.y,
-        element: header
+        initialY: window.state.y
       };
 
       header.style.cursor = 'grabbing';
       this.focusWindow(id);
-
-      // Create drag particle effect
-      this.createParticleEffect(e.clientX, e.clientY);
     };
 
     const onPointerMove = (e) => {
-      if (!this.dragState || this.dragState.id !== id) return;
+      if (!this.dragState || this.dragState.id !== id || this.dragState.pointerId !== e.pointerId) return;
 
       e.preventDefault();
 
@@ -214,7 +210,7 @@ class WindowManager {
     };
 
     const onPointerUp = (e) => {
-      if (!this.dragState || this.dragState.id !== id) return;
+      if (!this.dragState || this.dragState.pointerId !== e.pointerId) return;
 
       e.preventDefault();
 
