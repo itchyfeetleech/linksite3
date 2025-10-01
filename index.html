@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CRT-themed biolink desktop environment">
+  <title>Terminal Desktop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="green">
+  <!-- CRT overlay effects -->
+  <div class="crt-overlay">
+    <div class="crt-scanlines"></div>
+    <div class="crt-slotmask"></div>
+    <div class="crt-vignette"></div>
+    <div class="crt-static"></div>
+  </div>
+
+  <!-- Desktop environment -->
+  <div id="desktop" class="desktop">
+    <!-- Windows will be injected here -->
+  </div>
+
+  <!-- Taskbar -->
+  <nav class="taskbar" role="navigation" aria-label="Taskbar">
+    <button class="taskbar-start" aria-label="Start menu" aria-expanded="false">
+      <span class="start-glyph" aria-hidden="true">▤</span>
+      <span class="start-label">Start</span>
+    </button>
+
+    <div class="taskbar-pinned" role="list" aria-label="Pinned applications">
+      <button class="pinned-app" data-app="links" aria-label="Links">
+        <span class="app-icon">🔗</span>
+      </button>
+      <button class="pinned-app" data-app="console" aria-label="Analog Console">
+        <span class="app-icon">📟</span>
+      </button>
+      <button class="pinned-app" data-app="status" aria-label="Status Monitor">
+        <span class="app-icon">📊</span>
+      </button>
+    </div>
+
+    <div class="taskbar-windows" role="list" aria-label="Open windows">
+      <!-- Open window indicators injected here -->
+    </div>
+
+    <div class="taskbar-status">
+      <button class="status-capsule" aria-label="Toggle theme">
+        <span class="status-theme">GRN</span>
+      </button>
+      <time class="taskbar-clock" datetime="">00:00</time>
+    </div>
+  </nav>
+
+  <!-- Start menu -->
+  <div class="start-menu" role="menu" aria-label="Start menu" hidden>
+    <div class="start-menu-header">Applications</div>
+    <div class="start-menu-items">
+      <!-- Populated dynamically -->
+    </div>
+  </div>
+
+  <!-- Debug overlay -->
+  <div class="debug-overlay" hidden>
+    <div class="debug-header">DEBUG DIAGNOSTICS</div>
+    <div class="debug-content">
+      <div class="debug-row"><span>Windows:</span> <span id="debug-windows">0</span></div>
+      <div class="debug-row"><span>Focused:</span> <span id="debug-focused">—</span></div>
+      <div class="debug-row"><span>Viewport:</span> <span id="debug-viewport">—</span></div>
+      <div class="debug-row"><span>Theme:</span> <span id="debug-theme">green</span></div>
+      <div class="debug-row"><span>FPS:</span> <span id="debug-fps">—</span></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
