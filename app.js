@@ -210,7 +210,7 @@ class WindowManager {
     };
 
     const onPointerUp = (e) => {
-      if (!this.dragState || this.dragState.pointerId !== e.pointerId) return;
+      if (!this.dragState || this.dragState.id !== id || this.dragState.pointerId !== e.pointerId) return;
 
       e.preventDefault();
 
