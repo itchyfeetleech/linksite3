@@ -80,12 +80,14 @@ class CRTEffects {
 
     // Fade out boot screen
     await this.sleep(600);
-    this.bootOverlay.style.transition = 'opacity 0.5s ease';
-    this.bootOverlay.style.opacity = '0';
+    this.bootOverlay.classList.add('hidden');
 
     await this.sleep(500);
     this.bootOverlay.style.display = 'none';
     this.isBooted = true;
+
+    // Signal that boot is complete
+    window.dispatchEvent(new Event('boot-complete'));
   }
 
   async typeMessage(text, className = '') {
@@ -117,134 +119,9 @@ class CRTEffects {
   }
 
   setupContinuousEffects() {
-    // HEAVY screen flicker - increased frequency
-    setInterval(() => {
-      if (Math.random() < 0.05) { // 5% chance - more frequent
-        this.triggerFlicker();
-      }
-    }, 80);
-
-    // HEAVY VHS tracking noise
-    setInterval(() => {
-      if (Math.random() < 0.03) { // 3% chance - more frequent
-        this.triggerVHSGlitch();
-      }
-    }, 150);
-
-    // Phosphor persistence trails
-    this.setupPhosphorTrails();
-
-    // Screen burn-in simulation
-    this.setupBurnIn();
-
-    // HEAVY random interference
-    setInterval(() => {
-      if (Math.random() < 0.02) { // 2% chance - more frequent
-        this.triggerInterference();
-      }
-    }, 300);
-
-    // NEW: Screen distortion waves
-    setInterval(() => {
-      if (Math.random() < 0.015) {
-        this.triggerDistortionWave();
-      }
-    }, 400);
-
-    // NEW: Chromatic aberration bursts
-    setInterval(() => {
-      if (Math.random() < 0.01) {
-        this.triggerChromaticAberration();
-      }
-    }, 500);
-  }
-
-  triggerFlicker() {
-    const flicker = document.querySelector('.crt-flicker');
-    const intensity = 0.3 + Math.random() * 0.7; // Variable intensity
-    flicker.style.opacity = intensity.toString();
-    setTimeout(() => {
-      flicker.style.opacity = '0';
-    }, 30 + Math.random() * 120);
-  }
-
-  triggerVHSGlitch() {
-    const tracking = document.querySelector('.crt-vhs-tracking');
-    const intensity = 0.4 + Math.random() * 0.6;
-    tracking.style.opacity = intensity.toString();
-    tracking.style.transform = `translateY(${Math.random() * 200 - 100}px) scaleY(${0.95 + Math.random() * 0.1})`;
-    tracking.style.filter = `blur(${Math.random() * 2}px) hue-rotate(${Math.random() * 20 - 10}deg)`;
-
-    setTimeout(() => {
-      tracking.style.opacity = '0';
-      tracking.style.transform = '';
-      tracking.style.filter = 'blur(1px)';
-    }, 80 + Math.random() * 250);
-  }
-
-  triggerInterference() {
-    const desktop = document.getElementById('desktop');
-    const contentLayer = document.getElementById('content-layer');
-
-    // Heavy horizontal roll interference
-    const offsetX = Math.random() * 8 - 4;
-    const hueShift = Math.random() * 30 - 15;
-
-    desktop.style.filter = `hue-rotate(${hueShift}deg) saturate(1.8) contrast(1.2)`;
-    desktop.style.transform = `translateX(${offsetX}px) scaleX(${1 + Math.random() * 0.01})`;
-    contentLayer.style.filter = `brightness(${1.1 + Math.random() * 0.2})`;
-
-    setTimeout(() => {
-      desktop.style.filter = '';
-      desktop.style.transform = '';
-      contentLayer.style.filter = 'drop-shadow(0 0 10px var(--glow-color)) contrast(1.1)';
-    }, 40 + Math.random() * 120);
-  }
-
-  triggerDistortionWave() {
-    const contentLayer = document.getElementById('content-layer');
-    const desktop = document.getElementById('desktop');
-
-    // Wave distortion effect
-    const waveIntensity = 2 + Math.random() * 4;
-    desktop.style.transform = `scaleY(${1 + Math.random() * 0.015}) translateY(${waveIntensity}px)`;
-    desktop.style.filter = 'blur(0.3px)';
-
-    setTimeout(() => {
-      desktop.style.transform = '';
-      desktop.style.filter = '';
-    }, 100 + Math.random() * 200);
-  }
-
-  triggerChromaticAberration() {
-    const desktop = document.getElementById('desktop');
-
-    // RGB split effect
-    const shift = 1 + Math.random() * 3;
-    desktop.style.filter = `
-      drop-shadow(${shift}px 0 0 rgba(255, 0, 0, 0.5))
-      drop-shadow(-${shift}px 0 0 rgba(0, 255, 255, 0.5))
-    `;
-
-    setTimeout(() => {
-      desktop.style.filter = '';
-    }, 80 + Math.random() * 150);
-  }
-
-  setupPhosphorTrails() {
-    // Disabled - too distracting
-  }
-
-  createPhosphorTrail(x, y) {
-    // Disabled
-  }
-
-  setupBurnIn() {
-    // Subtle burn-in effect on static elements
-    const taskbar = document.querySelector('.taskbar');
-    if (taskbar) {
-      taskbar.style.filter = 'brightness(0.98)';
-    }
+    // CRT effects will be handled by WebGL shader
+    // This is just for boot sequence
+    console.log('[CRT Effects] Boot sequence complete');
   }
 
   setupAmbientSound() {

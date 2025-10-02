@@ -3,117 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Advanced CRT-themed biolink desktop environment with WebGL rendering">
-  <title>Terminal Desktop</title>
+  <meta name="description" content="WebGL Terminal - Pure shader-based CRT interface">
+  <title>Terminal OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-theme="green">
-  <!-- WebGL CRT shader canvas -->
-  <canvas id="crt-canvas" class="crt-canvas"></canvas>
+  <!-- WebGL canvas (everything renders here) -->
+  <canvas id="main-canvas"></canvas>
 
-  <!-- Main content layer -->
-  <div id="content-layer" class="content-layer">
-    <!-- Desktop environment -->
-    <div id="desktop" class="desktop">
-      <!-- Windows will be injected here -->
-    </div>
-
-    <!-- VATS-style Taskbar -->
-    <nav class="taskbar" role="navigation" aria-label="Taskbar">
-      <div class="taskbar-wrapper">
-        <div class="taskbar-border-top">┌─ TERMINAL CONTROL PANEL ─────────────────────────────────────────────────────────────────────────┐</div>
-
-        <div class="taskbar-main">
-          <button class="taskbar-start" aria-label="Start menu" aria-expanded="false">
-            <span class="start-bracket">[</span>
-            <span class="start-label">MENU</span>
-            <span class="start-bracket">]</span>
-          </button>
-
-          <div class="taskbar-divider">│</div>
-
-          <div class="taskbar-pinned" role="list" aria-label="Pinned applications">
-            <button class="pinned-app" data-app="links" aria-label="Links">
-              <span class="app-bracket">[1]</span>
-              <span class="app-label">LINKS</span>
-            </button>
-            <button class="pinned-app" data-app="console" aria-label="Console">
-              <span class="app-bracket">[2]</span>
-              <span class="app-label">TERM</span>
-            </button>
-            <button class="pinned-app" data-app="status" aria-label="Status">
-              <span class="app-bracket">[3]</span>
-              <span class="app-label">STAT</span>
-            </button>
-          </div>
-
-          <div class="taskbar-divider">│</div>
-
-          <div class="taskbar-windows" role="list" aria-label="Open windows">
-            <!-- Open window indicators injected here -->
-          </div>
-
-          <div class="taskbar-spacer"></div>
-
-          <div class="taskbar-divider">│</div>
-
-          <div class="taskbar-status">
-            <button class="status-capsule" aria-label="Toggle theme">
-              <span class="status-bracket">[</span>
-              <span class="status-theme">GRN</span>
-              <span class="status-bracket">]</span>
-            </button>
-            <div class="taskbar-divider-mini">│</div>
-            <time class="taskbar-clock" datetime="">
-              <span class="clock-bracket">[</span>
-              <span class="clock-time">00:00</span>
-              <span class="clock-bracket">]</span>
-            </time>
-          </div>
-        </div>
-
-        <div class="taskbar-border-bottom">└──────────────────────────────────────────────────────────────────────────────────────────────────┘</div>
-      </div>
-    </nav>
-
-    <!-- Start menu - VATS style -->
-    <div class="start-menu" role="menu" aria-label="Start menu" hidden>
-      <div class="start-menu-border-top">┌─ AVAILABLE PROGRAMS ───────────┐</div>
-      <div class="start-menu-items">
-        <!-- Populated dynamically -->
-      </div>
-      <div class="start-menu-border-bottom">└────────────────────────────────┘</div>
-    </div>
-
-    <!-- Debug overlay - VATS style -->
-    <div class="debug-overlay" hidden>
-      <div class="debug-border-top">┌─ DEBUG DIAGNOSTICS ────────────┐</div>
-      <div class="debug-content">
-        <div class="debug-row"><span>WINDOWS:</span> <span id="debug-windows">0</span></div>
-        <div class="debug-row"><span>FOCUSED:</span> <span id="debug-focused">—</span></div>
-        <div class="debug-row"><span>VIEWPORT:</span> <span id="debug-viewport">—</span></div>
-        <div class="debug-row"><span>THEME:</span> <span id="debug-theme">green</span></div>
-        <div class="debug-row"><span>FPS:</span> <span id="debug-fps">—</span></div>
-        <div class="debug-row"><span>SHADER:</span> <span id="debug-shader">WebGL</span></div>
-      </div>
-      <div class="debug-border-bottom">└────────────────────────────────┘</div>
-    </div>
-  </div>
-
-  <!-- Particle effects container -->
-  <div id="particles" class="particles"></div>
-
-  <!-- CRT Effects Overlay -->
-  <div class="crt-effects">
-    <div class="crt-scanline-overlay"></div>
-    <div class="crt-flicker"></div>
-    <div class="crt-vhs-tracking"></div>
-  </div>
-
-  <!-- Boot Overlay -->
+  <!-- Boot Overlay (fades out when ready) -->
   <div id="boot-overlay" class="boot-overlay">
     <div class="boot-screen">
       <div class="boot-scanline"></div>
@@ -121,13 +22,24 @@
     </div>
   </div>
 
-  <script src="crt-shader.js"></script>
-  <script src="effects.js"></script>
-  <script src="app.js"></script>
+  <!-- WebGL Fallback -->
+  <div id="no-webgl" class="no-webgl" hidden>
+    <div class="fallback-message">
+      <h1>[ WEBGL NOT SUPPORTED ]</h1>
+      <p>This terminal requires WebGL 2.0</p>
+      <p>Please use a modern browser</p>
+    </div>
+  </div>
 
-  <!-- Optional: Ambient Audio -->
-  <audio id="ambient-hum" loop>
-    <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
-  </audio>
+  <!-- Core Systems -->
+  <script src="effects.js"></script>
+  <script src="crt-shader.js"></script>
+  <script src="terminal-renderer.js"></script>
+  <script src="particle-system.js"></script>
+  <script src="fluid-simulator.js"></script>
+  <script src="raymarcher.js"></script>
+  <script src="terminal-content.js"></script>
+  <script src="terminal-input.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
