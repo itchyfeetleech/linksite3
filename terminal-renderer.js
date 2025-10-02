@@ -5,8 +5,10 @@
 
 class TerminalRenderer {
   constructor(canvas) {
+    console.log('[Renderer] Initializing with canvas:', canvas);
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    console.log('[Renderer] Got 2D context:', this.ctx ? 'YES' : 'NO');
     this.width = window.innerWidth;
     this.height = window.innerHeight;
 
@@ -55,6 +57,11 @@ class TerminalRenderer {
   }
 
   render(currentScreen, selectedIndex) {
+    if (!this.ctx) {
+      console.error('[Renderer] No context in render!');
+      return;
+    }
+
     this.time += 0.016;
     this.cursorBlink = Math.sin(this.time * 3) > 0 ? 1 : 0;
 

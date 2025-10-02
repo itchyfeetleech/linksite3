@@ -154,11 +154,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if required classes exist
   if (typeof TerminalRenderer === 'undefined') {
     console.error('[Main] TerminalRenderer not loaded!');
-    document.getElementById('no-webgl').hidden = false;
-    document.getElementById('no-webgl').querySelector('h1').textContent = '[ SYSTEM ERROR ]';
-    document.getElementById('no-webgl').querySelector('p').textContent = 'Failed to load terminal renderer';
+    const noWebGL = document.getElementById('no-webgl');
+    noWebGL.hidden = false;
+    noWebGL.querySelector('h1').textContent = '[ SYSTEM ERROR ]';
+    noWebGL.querySelector('p').textContent = 'Failed to load terminal renderer';
     return;
   }
+
+  // Ensure no-webgl stays hidden since we have TerminalRenderer
+  console.log('[Main] TerminalRenderer loaded, ensuring fallback is hidden');
+  document.getElementById('no-webgl').hidden = true;
 
   if (typeof ParticleSystem === 'undefined') {
     console.error('[Main] ParticleSystem not loaded!');
