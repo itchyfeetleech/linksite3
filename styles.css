@@ -189,6 +189,10 @@ body[data-theme="amber"] {
   z-index: 100000;
 }
 
+.no-webgl[hidden] {
+  display: none;
+}
+
 .fallback-message {
   text-align: center;
   padding: 40px;
