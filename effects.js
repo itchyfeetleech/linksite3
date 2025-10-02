@@ -117,19 +117,19 @@ class CRTEffects {
   }
 
   setupContinuousEffects() {
-    // Random screen flicker
+    // HEAVY screen flicker - increased frequency
     setInterval(() => {
-      if (Math.random() < 0.02) { // 2% chance every interval
+      if (Math.random() < 0.05) { // 5% chance - more frequent
         this.triggerFlicker();
       }
-    }, 100);
+    }, 80);
 
-    // VHS tracking noise
+    // HEAVY VHS tracking noise
     setInterval(() => {
-      if (Math.random() < 0.01) { // 1% chance
+      if (Math.random() < 0.03) { // 3% chance - more frequent
         this.triggerVHSGlitch();
       }
-    }, 200);
+    }, 150);
 
     // Phosphor persistence trails
     this.setupPhosphorTrails();
@@ -137,44 +137,98 @@ class CRTEffects {
     // Screen burn-in simulation
     this.setupBurnIn();
 
-    // Random interference
+    // HEAVY random interference
     setInterval(() => {
-      if (Math.random() < 0.005) {
+      if (Math.random() < 0.02) { // 2% chance - more frequent
         this.triggerInterference();
+      }
+    }, 300);
+
+    // NEW: Screen distortion waves
+    setInterval(() => {
+      if (Math.random() < 0.015) {
+        this.triggerDistortionWave();
+      }
+    }, 400);
+
+    // NEW: Chromatic aberration bursts
+    setInterval(() => {
+      if (Math.random() < 0.01) {
+        this.triggerChromaticAberration();
       }
     }, 500);
   }
 
   triggerFlicker() {
     const flicker = document.querySelector('.crt-flicker');
-    flicker.style.opacity = '1';
+    const intensity = 0.3 + Math.random() * 0.7; // Variable intensity
+    flicker.style.opacity = intensity.toString();
     setTimeout(() => {
       flicker.style.opacity = '0';
-    }, 50 + Math.random() * 100);
+    }, 30 + Math.random() * 120);
   }
 
   triggerVHSGlitch() {
     const tracking = document.querySelector('.crt-vhs-tracking');
-    tracking.style.opacity = '1';
-    tracking.style.transform = `translateY(${Math.random() * 100 - 50}px)`;
+    const intensity = 0.4 + Math.random() * 0.6;
+    tracking.style.opacity = intensity.toString();
+    tracking.style.transform = `translateY(${Math.random() * 200 - 100}px) scaleY(${0.95 + Math.random() * 0.1})`;
+    tracking.style.filter = `blur(${Math.random() * 2}px) hue-rotate(${Math.random() * 20 - 10}deg)`;
 
     setTimeout(() => {
       tracking.style.opacity = '0';
-    }, 100 + Math.random() * 200);
+      tracking.style.transform = '';
+      tracking.style.filter = 'blur(1px)';
+    }, 80 + Math.random() * 250);
   }
 
   triggerInterference() {
     const desktop = document.getElementById('desktop');
-    const originalFilter = desktop.style.filter;
+    const contentLayer = document.getElementById('content-layer');
 
-    // Horizontal roll interference
-    desktop.style.filter = 'hue-rotate(10deg) saturate(1.5)';
-    desktop.style.transform = `translateX(${Math.random() * 4 - 2}px)`;
+    // Heavy horizontal roll interference
+    const offsetX = Math.random() * 8 - 4;
+    const hueShift = Math.random() * 30 - 15;
+
+    desktop.style.filter = `hue-rotate(${hueShift}deg) saturate(1.8) contrast(1.2)`;
+    desktop.style.transform = `translateX(${offsetX}px) scaleX(${1 + Math.random() * 0.01})`;
+    contentLayer.style.filter = `brightness(${1.1 + Math.random() * 0.2})`;
 
     setTimeout(() => {
-      desktop.style.filter = originalFilter;
+      desktop.style.filter = '';
       desktop.style.transform = '';
-    }, 50 + Math.random() * 100);
+      contentLayer.style.filter = 'drop-shadow(0 0 10px var(--glow-color)) contrast(1.1)';
+    }, 40 + Math.random() * 120);
+  }
+
+  triggerDistortionWave() {
+    const contentLayer = document.getElementById('content-layer');
+    const desktop = document.getElementById('desktop');
+
+    // Wave distortion effect
+    const waveIntensity = 2 + Math.random() * 4;
+    desktop.style.transform = `scaleY(${1 + Math.random() * 0.015}) translateY(${waveIntensity}px)`;
+    desktop.style.filter = 'blur(0.3px)';
+
+    setTimeout(() => {
+      desktop.style.transform = '';
+      desktop.style.filter = '';
+    }, 100 + Math.random() * 200);
+  }
+
+  triggerChromaticAberration() {
+    const desktop = document.getElementById('desktop');
+
+    // RGB split effect
+    const shift = 1 + Math.random() * 3;
+    desktop.style.filter = `
+      drop-shadow(${shift}px 0 0 rgba(255, 0, 0, 0.5))
+      drop-shadow(-${shift}px 0 0 rgba(0, 255, 255, 0.5))
+    `;
+
+    setTimeout(() => {
+      desktop.style.filter = '';
+    }, 80 + Math.random() * 150);
   }
 
   setupPhosphorTrails() {

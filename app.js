@@ -1108,7 +1108,13 @@ class Taskbar {
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const timeString = `${hours}:${minutes}`;
 
-      this.clock.textContent = timeString;
+      // Update clock-time span if it exists, otherwise fallback to clock element
+      const clockTime = this.clock.querySelector('.clock-time');
+      if (clockTime) {
+        clockTime.textContent = timeString;
+      } else {
+        this.clock.textContent = timeString;
+      }
       this.clock.setAttribute('datetime', now.toISOString());
     };
 

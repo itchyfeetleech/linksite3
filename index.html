@@ -21,56 +21,85 @@
       <!-- Windows will be injected here -->
     </div>
 
-    <!-- Taskbar -->
+    <!-- VATS-style Taskbar -->
     <nav class="taskbar" role="navigation" aria-label="Taskbar">
-      <button class="taskbar-start" aria-label="Start menu" aria-expanded="false">
-        <span class="start-glyph" aria-hidden="true">▤</span>
-        <span class="start-label">Start</span>
-      </button>
+      <div class="taskbar-wrapper">
+        <div class="taskbar-border-top">┌─ TERMINAL CONTROL PANEL ─────────────────────────────────────────────────────────────────────────┐</div>
 
-      <div class="taskbar-pinned" role="list" aria-label="Pinned applications">
-        <button class="pinned-app" data-app="links" aria-label="Links">
-          <span class="app-icon">🔗</span>
-        </button>
-        <button class="pinned-app" data-app="console" aria-label="Analog Console">
-          <span class="app-icon">📟</span>
-        </button>
-        <button class="pinned-app" data-app="status" aria-label="Status Monitor">
-          <span class="app-icon">📊</span>
-        </button>
-      </div>
+        <div class="taskbar-main">
+          <button class="taskbar-start" aria-label="Start menu" aria-expanded="false">
+            <span class="start-bracket">[</span>
+            <span class="start-label">MENU</span>
+            <span class="start-bracket">]</span>
+          </button>
 
-      <div class="taskbar-windows" role="list" aria-label="Open windows">
-        <!-- Open window indicators injected here -->
-      </div>
+          <div class="taskbar-divider">│</div>
 
-      <div class="taskbar-status">
-        <button class="status-capsule" aria-label="Toggle theme">
-          <span class="status-theme">GRN</span>
-        </button>
-        <time class="taskbar-clock" datetime="">00:00</time>
+          <div class="taskbar-pinned" role="list" aria-label="Pinned applications">
+            <button class="pinned-app" data-app="links" aria-label="Links">
+              <span class="app-bracket">[1]</span>
+              <span class="app-label">LINKS</span>
+            </button>
+            <button class="pinned-app" data-app="console" aria-label="Console">
+              <span class="app-bracket">[2]</span>
+              <span class="app-label">TERM</span>
+            </button>
+            <button class="pinned-app" data-app="status" aria-label="Status">
+              <span class="app-bracket">[3]</span>
+              <span class="app-label">STAT</span>
+            </button>
+          </div>
+
+          <div class="taskbar-divider">│</div>
+
+          <div class="taskbar-windows" role="list" aria-label="Open windows">
+            <!-- Open window indicators injected here -->
+          </div>
+
+          <div class="taskbar-spacer"></div>
+
+          <div class="taskbar-divider">│</div>
+
+          <div class="taskbar-status">
+            <button class="status-capsule" aria-label="Toggle theme">
+              <span class="status-bracket">[</span>
+              <span class="status-theme">GRN</span>
+              <span class="status-bracket">]</span>
+            </button>
+            <div class="taskbar-divider-mini">│</div>
+            <time class="taskbar-clock" datetime="">
+              <span class="clock-bracket">[</span>
+              <span class="clock-time">00:00</span>
+              <span class="clock-bracket">]</span>
+            </time>
+          </div>
+        </div>
+
+        <div class="taskbar-border-bottom">└──────────────────────────────────────────────────────────────────────────────────────────────────┘</div>
       </div>
     </nav>
 
-    <!-- Start menu -->
+    <!-- Start menu - VATS style -->
     <div class="start-menu" role="menu" aria-label="Start menu" hidden>
-      <div class="start-menu-header">Applications</div>
+      <div class="start-menu-border-top">┌─ AVAILABLE PROGRAMS ───────────┐</div>
       <div class="start-menu-items">
         <!-- Populated dynamically -->
       </div>
+      <div class="start-menu-border-bottom">└────────────────────────────────┘</div>
     </div>
 
-    <!-- Debug overlay -->
+    <!-- Debug overlay - VATS style -->
     <div class="debug-overlay" hidden>
-      <div class="debug-header">DEBUG DIAGNOSTICS</div>
+      <div class="debug-border-top">┌─ DEBUG DIAGNOSTICS ────────────┐</div>
       <div class="debug-content">
-        <div class="debug-row"><span>Windows:</span> <span id="debug-windows">0</span></div>
-        <div class="debug-row"><span>Focused:</span> <span id="debug-focused">—</span></div>
-        <div class="debug-row"><span>Viewport:</span> <span id="debug-viewport">—</span></div>
-        <div class="debug-row"><span>Theme:</span> <span id="debug-theme">green</span></div>
+        <div class="debug-row"><span>WINDOWS:</span> <span id="debug-windows">0</span></div>
+        <div class="debug-row"><span>FOCUSED:</span> <span id="debug-focused">—</span></div>
+        <div class="debug-row"><span>VIEWPORT:</span> <span id="debug-viewport">—</span></div>
+        <div class="debug-row"><span>THEME:</span> <span id="debug-theme">green</span></div>
         <div class="debug-row"><span>FPS:</span> <span id="debug-fps">—</span></div>
-        <div class="debug-row"><span>Shader:</span> <span id="debug-shader">WebGL</span></div>
+        <div class="debug-row"><span>SHADER:</span> <span id="debug-shader">WebGL</span></div>
       </div>
+      <div class="debug-border-bottom">└────────────────────────────────┘</div>
     </div>
   </div>
 
