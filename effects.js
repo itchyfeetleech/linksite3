@@ -178,5 +178,11 @@ class CRTEffects {
 
 // Initialize effects when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  window.crtEffects = new CRTEffects();
+  console.log('[Effects] DOM ready, starting boot sequence');
+  try {
+    window.crtEffects = new CRTEffects();
+    console.log('[Effects] Boot sequence initialized');
+  } catch (error) {
+    console.error('[Effects] Failed to initialize:', error);
+  }
 });

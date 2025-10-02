@@ -150,5 +150,26 @@ class TerminalOS {
 // Initialize Terminal OS when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   console.log('[Main] DOM ready, creating Terminal OS');
+
+  // Check if required classes exist
+  if (typeof TerminalRenderer === 'undefined') {
+    console.error('[Main] TerminalRenderer not loaded!');
+    document.getElementById('no-webgl').hidden = false;
+    document.getElementById('no-webgl').querySelector('h1').textContent = '[ SYSTEM ERROR ]';
+    document.getElementById('no-webgl').querySelector('p').textContent = 'Failed to load terminal renderer';
+    return;
+  }
+
+  if (typeof ParticleSystem === 'undefined') {
+    console.error('[Main] ParticleSystem not loaded!');
+    return;
+  }
+
+  if (typeof TERMINAL_CONTENT === 'undefined') {
+    console.error('[Main] TERMINAL_CONTENT not loaded!');
+    return;
+  }
+
+  console.log('[Main] All systems loaded, initializing...');
   window.terminalOS = new TerminalOS();
 });

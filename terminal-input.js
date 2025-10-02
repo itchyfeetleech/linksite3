@@ -302,9 +302,16 @@ class TerminalInput {
 // Initialize on DOM ready
 window.terminalInput = null;
 document.addEventListener('DOMContentLoaded', () => {
-  window.terminalInput = new TerminalInput();
+  console.log('[Input] Initializing terminal input');
+  try {
+    window.terminalInput = new TerminalInput();
+    console.log('[Input] Terminal input initialized');
 
-  // Load saved theme
-  const savedTheme = localStorage.getItem('theme') || 'green';
-  document.body.dataset.theme = savedTheme;
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'green';
+    document.body.dataset.theme = savedTheme;
+    console.log('[Input] Theme set to:', savedTheme);
+  } catch (error) {
+    console.error('[Input] Failed to initialize:', error);
+  }
 });
