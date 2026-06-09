@@ -5,8 +5,8 @@ no frameworks, no build step, no dependencies, no audio files. Made for GitHub P
 
 ```
 ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL
-PERSONNEL FILE // "ITCHYFEETLEECH" — AUTHORIZED PERSONNEL ONLY
-[1] STATS  [2] LINKS  [3] PROJECTS  [4] TERMINAL  [5] ▒▒▒▒▒
+PERSONNEL FILE // "HOPPCX" — AUTHORIZED PERSONNEL ONLY
+[1] STATS  [2] LINKS  [3] LOADOUT  [4] TERMINAL  [5] ▒▒▒▒▒
 ```
 
 ## Features
@@ -45,7 +45,7 @@ in `localStorage` (theme, sound, vault unlock), and a `<noscript>` fallback.
 ```
 index.html        markup shell + effect overlay layers
 styles.css        themes, layout, and the entire CRT effect stack
-js/config.js      ← ALL profile content: name, bio, links, projects
+js/config.js      ← ALL profile content: name, bio, links, loadout
 js/main.js        boot orchestration + global keyboard router
 js/ui.js          tabs, page renderers, themes, vault flow
 js/terminal.js    prompt line + command set
@@ -59,7 +59,7 @@ js/dom.js         tiny DOM helpers
 ## Customizing
 
 Edit **`js/config.js`** only — name, role, bio, S.P.E.C.I.A.L. values, links,
-projects, and the vault page text all live there.
+loadout, and the vault page text all live there.
 
 Theme colors live at the top of `styles.css` (`body[data-theme="…"]` blocks).
 Add a block + add its name to `THEMES` in `js/config.js` to ship a new phosphor.

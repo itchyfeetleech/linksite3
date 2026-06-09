@@ -3,59 +3,49 @@
    ════════════════════════════════════════════════════════════════ */
 
 export const CONFIG = {
-  handle: 'itchyfeetleech',
-  name: 'ITCHYFEETLEECH',
-  role: 'CREATIVE DEVELOPER',
-  location: 'THE WASTELAND (REMOTE)',
+  handle: 'hoppcx',
+  name: 'HOPPCX',
+  role: 'COMPETITIVE FPS PLAYER',
+  location: 'THE WASTELAND (RANKED QUEUE)',
 
   // Short bio shown on the STATS page.
   blurb: [
-    'Builder of small, strange, glowing things for the web.',
-    'Equal parts engineer and tinkerer: happiest somewhere',
-    'between a debugger and a synthesizer. This terminal is',
-    'hand-rolled — no frameworks, no build step, no mercy.',
+    'Competitive FPS player and aim grinder.',
+    'CS2 · Valorant · Overwatch · Deadlock · Marvel Rivals.',
+    'This terminal is the .nfo from hoppcx.top, rebuilt',
+    'for the wasteland — same energy, more radiation.',
   ],
 
   // S.P.E.C.I.A.L. — values 1..10.
   special: [
-    { k: 'S', label: 'SYSTEMS',     value: 8, note: 'backend & infra' },
-    { k: 'P', label: 'PIXELS',      value: 7, note: 'ui & graphics' },
-    { k: 'E', label: 'ENDURANCE',   value: 9, note: 'debugging stamina' },
-    { k: 'C', label: 'CREATIVITY',  value: 8, note: 'weird ideas/min' },
-    { k: 'I', label: 'INTELLECT',   value: 7, note: 'algorithms' },
-    { k: 'A', label: 'AGILITY',     value: 6, note: 'ship speed' },
-    { k: 'L', label: 'LUCK',        value: 3, note: 'prod deploys' },
+    { k: 'S', label: 'STRENGTH',     value: 6, note: 'carries the team' },
+    { k: 'P', label: 'PERCEPTION',   value: 9, note: 'crosshair placement' },
+    { k: 'E', label: 'ENDURANCE',    value: 8, note: 'one more game' },
+    { k: 'C', label: 'CHARISMA',     value: 5, note: 'comms discipline' },
+    { k: 'I', label: 'INTELLIGENCE', value: 7, note: 'macro brain' },
+    { k: 'A', label: 'AGILITY',      value: 9, note: 'counter-strafing' },
+    { k: 'L', label: 'LUCK',         value: 3, note: 'spray transfers' },
   ],
 
   // LINKS page. `tail` is the visible address text.
   links: [
-    { label: 'GITHUB',   url: 'https://github.com/itchyfeetleech',  tail: 'github.com/itchyfeetleech' },
-    { label: 'EMAIL',    url: 'mailto:hello@example.com',           tail: 'hello@example.com' },
-    { label: 'BLUESKY',  url: 'https://bsky.app/',                  tail: 'bsky.app/you' },
-    { label: 'LINKEDIN', url: 'https://linkedin.com/',              tail: 'linkedin.com/in/you' },
-    { label: 'WEBSITE',  url: 'https://example.com',                tail: 'example.com' },
+    { label: 'FACEIT',    url: 'https://www.faceit.com/en/players/HoppCX',                  tail: 'faceit.com/en/players/HoppCX' },
+    { label: 'LEETIFY',   url: 'https://leetify.com/app/profile/76561198198305361',         tail: 'leetify.com · cs2 stats' },
+    { label: 'VALORANT',  url: 'https://tracker.gg/valorant/profile/riot/HoppCX%23000/',    tail: 'tracker.gg · HoppCX#000' },
+    { label: 'OVERWATCH', url: 'https://www.overbuff.com/players/HoppCX-1509',              tail: 'overbuff.com · HoppCX-1509' },
+    { label: 'DEADLOCK',  url: 'https://tracklock.gg/players/238039633',                    tail: 'tracklock.gg/players/238039633' },
+    { label: 'RIVALS',    url: 'https://tracker.gg/marvel-rivals/profile/ign/HoppCX/',      tail: 'tracker.gg · marvel rivals' },
+    { label: 'YOUTUBE',   url: 'https://www.youtube.com/@HoppCX',                           tail: 'youtube.com/@HoppCX' },
   ],
 
-  // PROJECTS page.
-  projects: [
-    {
-      name: 'TERMLINK BIOPROFILE',
-      desc: 'This site. A Fallout-style CRT terminal in vanilla JS.',
-      tech: 'css compositing · web audio · zero deps',
-      url: 'https://github.com/itchyfeetleech/linksite3',
-    },
-    {
-      name: 'PROJECT WANDERER',
-      desc: 'Procedural wasteland map generator.',
-      tech: 'canvas · simplex noise',
-      url: 'https://github.com/itchyfeetleech',
-    },
-    {
-      name: 'PIP-SYNTH',
-      desc: 'Browser synthesizer with a 50s radio voice.',
-      tech: 'web audio · worklets',
-      url: 'https://github.com/itchyfeetleech',
-    },
+  // LOADOUT page — current gear.
+  loadout: [
+    { k: 'SYS',  v: '9800X3D @ 5.7GHz',
+      note: 'thermal paste status: classified' },
+    { k: 'AIM',  v: 'OP1we + Obsidian dots @ 50cm on glass pad',
+      note: 'friction is a skill issue' },
+    { k: 'KEYS', v: 'Fun60ProHE + 480Hz OLED',
+      note: 'rapid trigger, zero excuses' },
   ],
 
   // Shown on the hidden VAULT page once the hacking minigame is won.
