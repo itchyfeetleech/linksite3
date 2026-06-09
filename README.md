@@ -1,166 +1,93 @@
-# Terminal Desktop - CRT Biolink Site
+# ☢ TERMLINK — CRT Bioprofile
 
-A fully-featured desktop environment with authentic CRT aesthetics, designed for GitHub Pages deployment.
+A Fallout-style RobCo terminal as a personal bio/link site. Vanilla HTML/CSS/JS —
+no frameworks, no build step, no dependencies, no audio files. Made for GitHub Pages.
+
+```
+ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL
+PERSONNEL FILE // "ITCHYFEETLEECH" — AUTHORIZED PERSONNEL ONLY
+[1] STATS  [2] LINKS  [3] PROJECTS  [4] TERMINAL  [5] ▒▒▒▒▒
+```
 
 ## Features
 
-### Visual Identity
-- **CRT Effects**: Authentic phosphor glow, scanlines, slot mask, vignette, and subtle static
-- **Dual Themes**: Green phosphor (default) and amber alternative
-- **Typography**: Space Grotesk for body/display, IBM Plex Mono for monospace elements
-- **Atmospheric Background**: Deep blacks with glassy panels and noise texture
+**CRT, in layers.** The picture is composited from a phosphor text layer plus
+stacked overlays: RGB aperture grille, scanlines, a slow vertical sweep, animated
+static (a tiny canvas painted at ~24 fps), glass glare, vignette, and tube-edge
+shadowing. Add a power-on tube collapse, phosphor flicker, random horizontal sync
+jolts, and a glowing block cursor.
 
-### Desktop Window System
-- **Full Window Management**: Drag, resize, maximize, minimize, close
-- **Keyboard Controls**:
-  - Arrow keys: Move window (10px)
-  - Shift + Arrows: Fine movement (1px)
-  - Alt + Arrows: Fast movement (20px)
-  - Ctrl/Cmd + Arrows: Resize window
-  - Enter: Focus primary action
-  - Esc: Close window
-- **State Persistence**: Window positions, sizes, and states saved to localStorage
-- **Viewport Clamping**: Windows stay within bounds on load and resize
-- **Focus Management**: Click or focus brings window to foreground
-- **Resize Handles**: All 8 edges and corners
-- **Double-click Header**: Toggle maximize
+**A real command line.** Typing anywhere lands in the prompt. `HELP`, `THEME`,
+`OPEN <n>`, `SOUND`, `WHOAMI`, `MOTD`, `REBOOT` (power-cycles the tube),
+plus a few commands that are better discovered than documented. Command history
+with ↑/↓, tab switching with keys 1–5, row selection with arrows + Enter.
 
-### Taskbar & Navigation
-- **Bottom-centered Glass Design**: Rounded housing with neon borders
-- **Start Button**: Opens application menu (▤ glyph + "Start" label)
-- **Pinned Apps**: Quick-launch with emoji icons and tooltips
-- **Open Windows List**: Shows all open windows with state badges
-- **Status Capsule**: Theme switcher (GRN/AMB)
-- **Live Clock**: Updates every second in `<time>` element
-- **Responsive**: Wraps cleanly on narrow screens
+**The hacking minigame.** Tab 5 is an encrypted partition. `HACK` drops you into
+the classic RobCo password game: ten candidate words hidden in a hex dump, four
+attempts, likeness feedback, and matched bracket pairs that remove duds or
+replenish your allowance. Fail and the terminal locks you out; win and you
+permanently unlock the VAULT page and the `OVERSEER` phosphor theme.
 
-### Start Menu
-- Lists all applications marked `showInStart`
-- Keyboard navigation with arrow keys, Home, End
-- Closes on Escape or outside click
-- Returns focus to Start button on close
+**Synthesized audio.** Every sound — key clicks, navigation blips, denial buzzes,
+the access-granted chime, the mains hum, the (aborted) nuclear detonation — is
+generated live by the Web Audio API. There are no audio files in this repo.
 
-### Application Windows
+**Four phosphor themes.** `GREEN`, `AMBER`, `BLUE`, and the unlockable
+`OVERSEER`, all driven by CSS custom properties.
 
-#### Analog Console
-- Terminal-style boot sequence with animated messages
-- Blinking cursor effect
-- System status messages with phosphor glow
+**The boring-but-important parts.** Keyboard accessible (real buttons/links,
+focus styles, native Tab/Enter preserved), `prefers-reduced-motion` support
+(skips typing, static, and flicker), responsive down to phones, state persisted
+in `localStorage` (theme, sound, vault unlock), and a `<noscript>` fallback.
 
-#### Links
-- Grid layout of biolink cards
-- Customizable icons, titles, descriptions, URLs
-- Hover effects with neon glow
-- Responsive single-column on mobile
+## Files
 
-#### Status Monitor
-- Real-time system diagnostics
-- CPU, Memory, Disk usage bars
-- Display settings (phosphor type, refresh rate, scanlines)
-- Network status and uptime counter
-- Updates dynamically
-
-### Debug Overlay
-- Toggle with Alt+D or long-press taskbar (800ms)
-- Shows: window count, focused window, viewport size, theme, FPS
-- Positioned top-right with semi-transparent black background
-
-## Deployment to GitHub Pages
-
-### Option 1: Manual Upload
-1. Copy `index.html`, `styles.css`, and `app.js` to your repository
-2. Go to Settings → Pages
-3. Select branch (main/master) and root directory
-4. Save and wait for deployment
-
-### Option 2: GitHub Actions
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+```
+index.html        markup shell + effect overlay layers
+styles.css        themes, layout, and the entire CRT effect stack
+js/config.js      ← ALL profile content: name, bio, links, projects
+js/main.js        boot orchestration + global keyboard router
+js/ui.js          tabs, page renderers, themes, vault flow
+js/terminal.js    prompt line + command set
+js/hack.js        the password minigame
+js/boot.js        POST/boot typing sequence
+js/audio.js       Web Audio synthesizer
+js/fx.js          static, jolts, power transitions
+js/dom.js         tiny DOM helpers
 ```
 
-### Custom Domain (Optional)
-1. Add a `CNAME` file with your domain
-2. Configure DNS with your provider:
-   - A records: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-   - Or CNAME: `username.github.io`
+## Customizing
 
-## Customization
+Edit **`js/config.js`** only — name, role, bio, S.P.E.C.I.A.L. values, links,
+projects, and the vault page text all live there.
 
-### Edit Links
-In `app.js`, find `generateLinksContent()` and modify the `links` array:
+Theme colors live at the top of `styles.css` (`body[data-theme="…"]` blocks).
+Add a block + add its name to `THEMES` in `js/config.js` to ship a new phosphor.
 
-```javascript
-const links = [
-  { icon: '🐙', title: 'GitHub', desc: 'Your description', url: 'https://github.com/username' },
-  // Add more links...
-];
+## Running
+
+It's ES modules, so it needs to be served over HTTP (opening `index.html` via
+`file://` won't work):
+
+```sh
+npx http-server .        # or: python3 -m http.server
 ```
 
-### Change Theme Colors
-In `styles.css`, edit the `:root` variables:
+### GitHub Pages
 
-```css
-:root {
-  --phosphor-primary: #00ff41;  /* Main green */
-  --phosphor-dim: #00cc33;      /* Dimmer green */
-  --phosphor-bright: #66ff88;   /* Brighter green */
-  /* ... */
-}
-```
+Push to `main`, then Settings → Pages → deploy from branch → `main` / root.
+Nothing to build.
 
-### Add New Windows
-In `app.js`, add to `initializeWindows()`:
+## Controls
 
-```javascript
-this.createWindow('myapp', {
-  title: 'My App',
-  icon: '🚀',
-  x: 200,
-  y: 200,
-  width: 500,
-  height: 400,
-  content: '<div>Your HTML content</div>',
-  showInStart: true
-});
-```
-
-### Adjust CRT Effects
-In `styles.css`, modify CRT parameters:
-
-```css
-:root {
-  --crt-intensity: 0.85;      /* Overall effect strength */
-  --scanline-opacity: 0.15;   /* Scanline visibility */
-  --slotmask-opacity: 0.08;   /* Slot mask strength */
-  --vignette-strength: 0.4;   /* Edge darkening */
-  --static-opacity: 0.03;     /* Noise intensity */
-}
-```
-
-## Browser Support
-- Chrome/Edge 90+
-- Firefox 88+
-- Safari 14+
+| Input | Action |
+| --- | --- |
+| `1`–`5` | switch tabs |
+| `↑` `↓` | select rows / command history |
+| `Enter` | activate selection / run command |
+| `Esc` | clear prompt / back to STATS / abort hack |
+| any typing | goes to the prompt |
 
 ## License
-MIT - Feel free to use and modify for your projects.
 
-## Credits
-Built with vanilla JavaScript, CSS Grid, and custom animations. No frameworks required.
+MIT.

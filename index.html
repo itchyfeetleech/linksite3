@@ -2,43 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="WebGL Terminal - Pure shader-based CRT interface">
-  <title>Terminal OS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="itchyfeetleech — personnel record. A RobCo-style CRT terminal bioprofile.">
+  <meta name="theme-color" content="#070b07">
+  <title>ITCHYFEETLEECH // TERMLINK</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☢</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-theme="green">
-  <!-- WebGL canvas (everything renders here) -->
-  <canvas id="main-canvas"></canvas>
 
-  <!-- Boot Overlay (fades out when ready) -->
-  <div id="boot-overlay" class="boot-overlay">
-    <div class="boot-screen">
-      <div class="boot-scanline"></div>
-      <div class="boot-content"></div>
+  <div id="stage">
+    <div id="monitor">
+      <div id="screen">
+
+        <!-- Phosphor layer: everything readable lives here -->
+        <div id="phosphor">
+          <div id="boot" class="boot" aria-live="polite"></div>
+
+          <div id="ui" hidden>
+            <header id="hdr">
+              <div class="hdr-row">
+                <span>ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL</span>
+                <span class="hdr-right">UPLINK: <span class="ok">SECURE</span></span>
+              </div>
+              <div class="hdr-row hdr-sub">
+                <span id="hdr-file">PERSONNEL FILE // LOADING…</span>
+                <span class="hdr-right" id="clock" aria-hidden="true"></span>
+              </div>
+              <nav id="tabs" aria-label="Sections"></nav>
+            </header>
+
+            <main id="page" tabindex="-1"></main>
+
+            <div id="promptline" title="Type a command — try HELP">
+              <span class="ps1" aria-hidden="true">&gt;</span><span id="cli-mirror"></span><span class="cursor" aria-hidden="true"></span>
+              <input id="cli" autocomplete="off" autocapitalize="off" spellcheck="false"
+                     aria-label="Terminal command input. Type HELP for a list of commands." maxlength="64">
+            </div>
+
+            <footer id="ftr">
+              <button class="chip" id="chip-sound" title="Toggle sound">SND --</button>
+              <button class="chip" id="chip-theme" title="Cycle phosphor theme">THM --</button>
+              <span class="chip chip-static">HP 100/100</span>
+              <span class="chip chip-static">LVL 27</span>
+              <span class="chip chip-grow" id="chip-hint">TYPE "HELP" FOR COMMANDS</span>
+            </footer>
+          </div>
+        </div>
+
+        <!-- CRT effect overlays (purely decorative) -->
+        <div class="fx fx-aperture" aria-hidden="true"></div>
+        <div class="fx fx-scan" aria-hidden="true"></div>
+        <div class="fx fx-sweep" aria-hidden="true"></div>
+        <canvas id="noise" class="fx" width="160" height="120" aria-hidden="true"></canvas>
+        <div class="fx fx-glare" aria-hidden="true"></div>
+        <div class="fx fx-vignette" aria-hidden="true"></div>
+        <div class="fx fx-frame" aria-hidden="true"></div>
+      </div>
+
+      <div id="chin" aria-hidden="true">
+        <span class="led"></span>
+        <span class="brand">ROBCO&nbsp;RT-3000&nbsp;&nbsp;·&nbsp;&nbsp;UNIFIED&nbsp;OPERATING&nbsp;SYSTEM</span>
+        <span class="model">EST.&nbsp;2077</span>
+      </div>
     </div>
   </div>
 
-  <!-- WebGL Fallback -->
-  <div id="no-webgl" class="no-webgl" hidden>
-    <div class="fallback-message">
-      <h1>[ WEBGL NOT SUPPORTED ]</h1>
-      <p>This terminal requires WebGL 2.0</p>
-      <p>Please use a modern browser</p>
+  <noscript>
+    <div class="noscript">
+      <h1>[ TERMINAL OFFLINE ]</h1>
+      <p>This terminal requires JavaScript to boot.</p>
+      <p>github.com/itchyfeetleech</p>
     </div>
-  </div>
+  </noscript>
 
-  <!-- Core Systems -->
-  <script src="effects.js"></script>
-  <script src="terminal-content.js"></script>
-  <script src="terminal-renderer.js"></script>
-  <script src="particle-system.js"></script>
-  <script src="fluid-simulator.js"></script>
-  <script src="raymarcher.js"></script>
-  <script src="terminal-input.js"></script>
-  <script src="main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
