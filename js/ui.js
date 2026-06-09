@@ -22,7 +22,7 @@ export const state = {
 const TABS = [
   { id: 'stats',    label: 'STATS' },
   { id: 'links',    label: 'LINKS' },
-  { id: 'projects', label: 'PROJECTS' },
+  { id: 'loadout',  label: 'LOADOUT' },
   { id: 'term',     label: 'TERMINAL' },
   { id: 'vault',    label: '▒▒▒▒▒' },
 ];
@@ -129,11 +129,11 @@ export const ui = {
     const page = this.els.page;
     page.replaceChildren();
     ({
-      stats:    () => this.renderStats(page),
-      links:    () => this.renderLinks(page),
-      projects: () => this.renderProjects(page),
-      term:     () => this.renderTerm(page),
-      vault:    () => this.renderVault(page),
+      stats:   () => this.renderStats(page),
+      links:   () => this.renderLinks(page),
+      loadout: () => this.renderLoadout(page),
+      term:    () => this.renderTerm(page),
+      vault:   () => this.renderVault(page),
     })[id]();
     page.scrollTop = 0;
   },
@@ -202,30 +202,29 @@ export const ui = {
     ], 2 + rows.length);
   },
 
-  renderProjects(page) {
+  renderLoadout(page) {
     revealLines(page, [
-      { text: 'FIELD NOTES — SELECTED WORK', cls: 'dim' },
+      { text: 'FIELD LOADOUT — CURRENT GEAR', cls: 'dim' },
       { text: ' ' },
     ]);
     let i = 2;
-    CONFIG.projects.forEach((p, n) => {
-      const a = el('a', 'row nav-item');
-      a.href = p.url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.append(
-        document.createTextNode(`[${String(n + 1).padStart(2, '0')}] ${p.name} `),
-        el('span', 'tail', '↗'),
+    CONFIG.loadout.forEach((g) => {
+      const head = el('div');
+      head.append(
+        el('span', 'bright', g.k.padEnd(5, ' ')),
+        el('span', 'dim', '··· '),
+        document.createTextNode(g.v),
       );
-      a.addEventListener('click', () => sfx.open());
       revealLines(page, [
-        { node: a },
-        { text: `     ${p.desc}`, cls: 'dim' },
-        { text: `     ${p.tech}`, cls: 'faint' },
+        { node: head },
+        { text: `         ${g.note}`, cls: 'faint' },
         { text: ' ' },
       ], i);
-      i += 4;
+      i += 3;
     });
+    revealLines(page, [
+      { text: 'CONDITION: 100/100 — REPAIRED BEFORE EVERY QUEUE', cls: 'faint' },
+    ], i);
   },
 
   renderTerm(page) {
@@ -254,7 +253,7 @@ export const ui = {
     if (state.tab === 'term') this.els.page.scrollTop = this.els.page.scrollHeight;
   },
 
-  /* ── row navigation (links / projects) ─────────────────────── */
+  /* ── row navigation (links, etc.) ─────────────────────── */
   navItems() { return [...this.els.page.querySelectorAll('.nav-item')]; },
 
   nav(dir) {

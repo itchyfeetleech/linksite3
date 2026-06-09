@@ -18,7 +18,7 @@ const DOGMEAT = String.raw`
 
 const HELP = [
   ['HELP',            'this list'],
-  ['STATS / LINKS / PROJECTS / TERMINAL', 'switch tabs (or keys 1-5)'],
+  ['STATS / LINKS / LOADOUT / TERMINAL', 'switch tabs (or keys 1-5)'],
   ['OPEN <N>',        'open link number N'],
   ['THEME <NAME>',    'phosphor: ' + THEMES.join(' / ') + ' / ?????'],
   ['SOUND ON|OFF',    'toggle synthesized audio'],
@@ -87,7 +87,7 @@ export const terminal = {
   },
 
   isNavCommand(raw) {
-    return /^(stats|links|projects|terminal|term|vault|hack|reboot)\b/i.test(raw.trim());
+    return /^(stats|links|loadout|terminal|term|vault|hack|reboot)\b/i.test(raw.trim());
   },
 
   commands: {
@@ -101,7 +101,7 @@ export const terminal = {
 
     STATS()    { ui.switchTab('stats'); },
     LINKS()    { ui.switchTab('links'); },
-    PROJECTS() { ui.switchTab('projects'); },
+    LOADOUT()  { ui.switchTab('loadout'); },
     TERMINAL() { ui.switchTab('term'); },
     TERM()     { ui.switchTab('term'); },
     VAULT()    { ui.switchTab('vault'); },

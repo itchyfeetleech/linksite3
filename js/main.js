@@ -72,7 +72,7 @@ window.addEventListener('keydown', (e) => {
 
     default:
       if (/^[1-5]$/.test(e.key) && !cli.value) {
-        ui.switchTab(['stats', 'links', 'projects', 'term', 'vault'][+e.key - 1]);
+        ui.switchTab(['stats', 'links', 'loadout', 'term', 'vault'][+e.key - 1]);
         e.preventDefault();
         return;
       }
