@@ -8,7 +8,6 @@ import { CONFIG, THEMES, SECRET_THEME } from './config.js';
 import { sfx } from './audio.js';
 import { ui, state } from './ui.js';
 import { powerOff } from './fx.js';
-import { scene } from './scene.js';
 
 const DOGMEAT = String.raw`
       __
@@ -23,8 +22,6 @@ const HELP = [
   ['OPEN <N>',        'open link number N'],
   ['THEME <NAME>',    'phosphor: ' + THEMES.join(' / ') + ' / ?????'],
   ['SOUND ON|OFF',    'toggle synthesized audio'],
-  ['FOCUS / DESK',    'dolly the camera in / out'],
-  ['FX ON|OFF',       'CRT effects (OFF = plain terminal)'],
   ['HACK',            'breach the encrypted partition'],
   ['WHOAMI / DATE / MOTD / CLEAR', 'the classics'],
   ['REBOOT',          'power-cycle the tube'],
@@ -90,7 +87,7 @@ export const terminal = {
   },
 
   isNavCommand(raw) {
-    return /^(stats|links|loadout|terminal|term|vault|hack|reboot|focus|desk)\b/i.test(raw.trim());
+    return /^(stats|links|loadout|terminal|term|vault|hack|reboot)\b/i.test(raw.trim());
   },
 
   commands: {
@@ -149,24 +146,6 @@ export const terminal = {
       if ((want === 'on') !== sfx.enabled || !want) sfx.toggle();
       ui.paintChips(sfx.enabled);
       ui.print([{ text: `AUDIO ${sfx.enabled ? 'ENABLED — all sounds are live-synthesized' : 'DISABLED'}`, cls: 'dim' }]);
-    },
-
-    FOCUS() {
-      sfx.nav();
-      scene.setView('zoom');
-      ui.print([{ text: 'CAMERA: DOLLY IN. [ESC] RETURNS TO THE DESK.', cls: 'dim' }]);
-    },
-
-    DESK() {
-      sfx.nav();
-      scene.setView('desk');
-      ui.print([{ text: 'CAMERA: DESK VIEW.', cls: 'dim' }]);
-    },
-
-    FX(args) {
-      const want = (args[0] || '').toLowerCase();
-      scene.setFx(want ? want === 'on' : !scene.fxOn);
-      ui.print([{ text: `CRT EFFECTS ${scene.fxOn ? 'ON' : 'OFF — plain terminal view'}`, cls: 'dim' }]);
     },
 
     CLEAR()  { ui.termLog.replaceChildren(); },
