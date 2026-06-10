@@ -1,7 +1,11 @@
 /* ════════════════════════════════════════════════════════════════
-   ROBCO TERMLINK — CRT bioprofile
+   ROBCO TERMLINK — CRT bioprofile, desk edition
    Layers (bottom → top):
-     #screen (glass)  →  #phosphor (text)  →  .fx overlays
+     #viewport (camera) → #tilt (parallax) → #scene (2400×1500 canvas)
+       #wall → #desk → #cable → #crt (bezel → #screen → fx) → props
+   The scene is drawn in fixed "design pixels"; js/scene.js scales
+   and pans the canvas (desk view ↔ focus view). body.plain drops
+   the scenery and stretches the screen over the viewport.
    Themes are driven entirely by the custom properties below.
    ════════════════════════════════════════════════════════════════ */
 
@@ -56,67 +60,400 @@ body[data-theme="overseer"] {
 html, body { height: 100%; }
 
 body {
+  --glow-on: 1;             /* 0 while the tube is cold or powered off */
   background:
     radial-gradient(120% 90% at 50% 0%, #15181a 0%, #0a0c0d 45%, #050606 100%);
   font-family: "VT323", "Courier New", monospace;
   overflow: hidden;
   -webkit-font-smoothing: none;
 }
+body.cold, body.dark { --glow-on: 0; }
 
 ::selection { background: var(--c-text); color: var(--c-bg0); text-shadow: none; }
 
-/* ── Stage & monitor housing ─────────────────────────────────── */
-#stage {
-  height: 100%;
-  display: grid;
-  place-items: center;
-  padding: clamp(0px, 2.5vmin, 28px);
+/* ════════════════════════════════════════════════════════════════
+   THE ROOM — camera, parallax, design canvas
+   ════════════════════════════════════════════════════════════════ */
+#viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1800px;
+  opacity: 0;                       /* until js/scene.js takes over */
+}
+body.booted #viewport { opacity: 1; }
+
+#tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
 }
 
-#monitor {
-  width: min(1180px, 100%);
-  height: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
+#scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2400px;
+  height: 1500px;
+  margin: -750px 0 0 -1200px;
+  transform-style: preserve-3d;
+  transition:
+    transform .9s cubic-bezier(.22, .84, .28, 1),
+    transform-origin .9s cubic-bezier(.22, .84, .28, 1);
+  /* design-pixel typography; the camera scale does the rest */
+  --fs: 20px;
+  --pad: 34px;
+}
+#scene.no-anim { transition: none; }
+
+/* ── Back wall ───────────────────────────────────────────────── */
+#wall {
+  position: absolute;
+  left: -1600px; right: -1600px;
+  top: -1200px; bottom: 310px;
+  transform: translateZ(-140px);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 178px, rgba(255, 255, 255, .015) 178px 180px),
+    linear-gradient(180deg, #0b0d0e 0%, #141718 28%, #131617 55%, #0a0b0c 100%);
+}
+#wall::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(46% 38% at 50% 78%, var(--c-glow) 0%, transparent 70%);
+  opacity: calc(.13 * var(--glow-on));
+  transition: opacity .45s;
+}
+
+/* ── Desk ────────────────────────────────────────────────────── */
+#desk {
+  position: absolute;
+  left: -1600px; right: -1600px;
+  top: 1190px; bottom: -1000px;
+  background:
+    /* top-face → front-edge falloff */
+    linear-gradient(180deg,
+      rgba(0, 0, 0, 0)    0px,
+      rgba(0, 0, 0, .16) 120px,
+      rgba(0, 0, 0, .5)  146px,
+      rgba(255, 255, 255, .04) 150px,
+      rgba(0, 0, 0, .62) 158px,
+      rgba(0, 0, 0, .9)  100%),
+    /* plank seams + faint grain */
+    repeating-linear-gradient(92deg,
+      rgba(0, 0, 0, .26)        0px 3px,
+      rgba(255, 255, 255, .02)  3px 5px,
+      rgba(0, 0, 0, 0)          5px 238px),
+    linear-gradient(180deg, #4a3a28 0%, #3a2d1e 40%, #241b11 100%);
+}
+
+/* phosphor light pooling on the desk in front of the tube */
+#desk-glow {
+  position: absolute;
+  left: 650px; top: 1182px;
+  width: 1100px; height: 290px;
+  transform: translateZ(4px);
+  background: radial-gradient(50% 55% at 50% 16%, var(--c-glow) 0%, transparent 70%);
+  mix-blend-mode: screen;
+  opacity: calc(.34 * var(--glow-on));
+  transition: opacity .45s;
+}
+
+/* power cable running off-frame */
+#cable {
+  position: absolute;
+  left: 1850px; top: 1080px;
+  transform: translateZ(14px);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   THE MONITOR — RobCo RT-3000
+   canvas geometry (mirrored in js/scene.js):
+     case 470,90 1460×1120 · bezel +96,+54 1268×958 · glass +14 1240×930
+   ════════════════════════════════════════════════════════════════ */
+#crt {
+  position: absolute;
+  left: 470px; top: 90px;
+  width: 1460px; height: 1120px;
+  transform: translateZ(30px);
+  border-radius: 36px 36px 26px 26px;
+  --crt-inset:
+    inset 0 3px 2px rgba(255, 255, 255, .14),
+    inset 0 -16px 26px rgba(0, 0, 0, .55),
+    inset 18px 0 30px rgba(0, 0, 0, .38),
+    inset -18px 0 30px rgba(0, 0, 0, .38),
+    0 46px 80px -24px rgba(0, 0, 0, .85);
+  background:
+    radial-gradient(140% 90% at 50% -10%, rgba(255, 255, 255, .07), transparent 55%),
+    linear-gradient(180deg, #6a6c59 0%, #585a4a 12%, #4c4e40 55%, #3b3d33 88%, #2c2e27 100%);
+  box-shadow: var(--crt-inset), 0 0 170px -50px var(--c-glow);
+  transition: box-shadow .45s;
+}
+body.cold #crt, body.dark #crt { box-shadow: var(--crt-inset); }
+
+.crt-vents {
+  position: absolute;
+  top: 14px; left: 170px; right: 170px;
+  height: 26px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, .55) 0 16px, transparent 16px 38px);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .8);
+  opacity: .75;
+}
+
+.crt-bezel {
+  position: absolute;
+  left: 96px; top: 54px;
+  width: 1268px; height: 958px;
+  border-radius: 44px;
+  background: linear-gradient(180deg, #2e3029 0%, #22241e 60%, #191b16 100%);
+  box-shadow:
+    inset 0 3px 8px rgba(0, 0, 0, .85),
+    inset 0 -2px 3px rgba(255, 255, 255, .08),
+    0 1px 0 rgba(255, 255, 255, .1);
 }
 
 #screen {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  border-radius: clamp(6px, 1.4vmin, 18px);
+  position: absolute;
+  left: 14px; top: 14px;
+  width: 1240px; height: 930px;
+  border-radius: 46px / 56px;
   background: radial-gradient(115% 115% at 50% 42%, var(--c-bg1) 0%, var(--c-bg0) 78%);
   box-shadow:
-    0 0 0 1px #000,
-    0 0 0 clamp(4px, .8vmin, 10px) #181a18,
-    0 0 0 clamp(5px, 1vmin, 12px) #000,
-    0 22px 70px -18px rgba(0, 0, 0, .9),
-    0 0 90px -30px var(--c-glow);
+    inset 0 0 80px rgba(0, 0, 0, .5),
+    0 0 36px -6px var(--c-glow),
+    0 0 110px -16px var(--c-glow);
   overflow: hidden;
-  transition: background .6s;
+  transition: background .6s, box-shadow .45s;
+}
+body.cold #screen, body.dark #screen {
+  background: #0a0c0a;
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, .6);
+}
+/* dead glass keeps its reflections, loses the picture */
+body.cold :is(.fx-aperture, .fx-scan, .fx-sweep, .fx-vignette, #noise),
+body.dark :is(.fx-aperture, .fx-scan, .fx-sweep, .fx-vignette, #noise) { opacity: 0; }
+
+/* a dollyable hint: dead glass zooms you in (desk view only) */
+body:not(.plain):not(.view-zoom) #screen { cursor: zoom-in; }
+
+/* degauss wobble on power-on */
+#screen.degauss { animation: degauss .8s cubic-bezier(.3, .6, .4, 1) 1; }
+@keyframes degauss {
+  0%   { transform: scale(1); }
+  12%  { transform: scale(1.014, .982) skewX(.5deg);   filter: hue-rotate(14deg) brightness(1.35) saturate(1.4); }
+  32%  { transform: scale(.992, 1.012) skewX(-.35deg); filter: hue-rotate(-9deg) brightness(1.12); }
+  55%  { transform: scale(1.005, .996) skewX(.15deg);  filter: hue-rotate(4deg); }
+  80%  { transform: scale(.999, 1.002); }
+  100% { transform: scale(1); }
 }
 
-/* monitor "chin" with power LED */
+/* ── Chin: LED, power button, knobs, badge ───────────────────── */
 #chin {
+  position: absolute;
+  left: 110px; right: 110px;
+  bottom: 16px; height: 78px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px clamp(8px, 1.5vmin, 18px) 2px;
-  color: #4d544d;
-  font-size: 13px;
-  letter-spacing: 3px;
+  gap: 26px;
+  padding: 0 34px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .28), rgba(0, 0, 0, .12) 40%, rgba(0, 0, 0, .34));
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .55), 0 1px 0 rgba(255, 255, 255, .07);
+  color: #7f8270;
+  font-size: 24px;
+  letter-spacing: 4px;
   user-select: none;
 }
-#chin .brand { flex: 1; text-align: center; }
+#chin .brand { flex: 1; text-align: center; text-shadow: 0 1px 0 rgba(0, 0, 0, .8); }
+#chin .model { text-shadow: 0 1px 0 rgba(0, 0, 0, .8); }
 #chin .led {
-  width: 9px; height: 9px;
+  width: 14px; height: 14px;
   border-radius: 50%;
   background: var(--c-text);
-  box-shadow: 0 0 8px 1px var(--c-glow);
+  box-shadow: 0 0 10px 2px var(--c-glow), inset 0 -2px 3px rgba(0, 0, 0, .4);
   animation: led-breathe 4s ease-in-out infinite;
+  transition: background .3s, box-shadow .3s;
+}
+body.cold #chin .led, body.dark #chin .led {
+  background: #20231d;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .8);
+  animation: none;
 }
 @keyframes led-breathe { 50% { opacity: .55; } }
+
+#power {
+  position: relative;
+  width: 66px; height: 46px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #5d5f4f 0%, #414337 55%, #30322a 100%);
+  box-shadow: 0 4px 0 #1b1c16, inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+#power::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 18px; height: 18px;
+  margin: -8px 0 0 -9px;
+  border: 3px solid #21231c;
+  border-radius: 50%;
+}
+#power::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 9px;
+  width: 3px; height: 11px;
+  margin-left: -1.5px;
+  background: #21231c;
+}
+#power:active { transform: translateY(3px); box-shadow: 0 1px 0 #1b1c16, inset 0 1px 0 rgba(255, 255, 255, .15); }
+#power:focus-visible { outline: 2px dashed var(--c-bright); outline-offset: 3px; }
+
+.knob {
+  position: relative;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 28%, #6e7060, #3a3c31 62%, #23241d);
+  box-shadow: inset 0 -3px 5px rgba(0, 0, 0, .65), 0 3px 5px rgba(0, 0, 0, .55);
+}
+.knob::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 5px;
+  width: 4px; height: 13px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: #15160f;
+}
+.knob-b { transform: rotate(54deg); }
+
+/* ════════════════════════════════════════════════════════════════
+   DESK PROPS
+   ════════════════════════════════════════════════════════════════ */
+#kbd {
+  position: absolute;
+  left: 830px; top: 1250px;
+  width: 760px; height: 148px;
+  transform: translateZ(70px);
+  border-radius: 14px 14px 22px 22px;
+  background:
+    radial-gradient(120% 100% at 50% -30%, rgba(255, 255, 255, .06), transparent 60%),
+    linear-gradient(180deg, #4a4c3f 0%, #2e3027 70%, #1d1f19 100%);
+  box-shadow: 0 20px 30px -12px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+#kbd .kbd-keys {
+  position: absolute;
+  left: 20px; right: 20px;
+  top: 14px; height: 84px;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 38px, #15160f 38px 44px),
+    repeating-linear-gradient(180deg, #3b3e31 0 24px, #15160f 24px 28px);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .6);
+}
+#kbd .kbd-space {
+  position: absolute;
+  left: 220px; right: 220px;
+  bottom: 14px; height: 26px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #41443a, #2a2c23);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 2px 3px rgba(0, 0, 0, .6);
+}
+/* screen light raking across the keycaps */
+#kbd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--c-glow), transparent 65%);
+  mix-blend-mode: screen;
+  opacity: calc(.12 * var(--glow-on));
+  transition: opacity .45s;
+  pointer-events: none;
+}
+
+.prop { position: absolute; }
+
+/* coffee mug, rim-lit by the tube */
+.prop-mug {
+  left: 1740px; top: 1192px;
+  width: 110px; height: 132px;
+  transform: translateZ(80px);
+  border-radius: 10px 10px 18px 18px / 12px 12px 22px 22px;
+  background: linear-gradient(90deg, #101210 0%, #2c2f26 30%, #3b3f32 46%, #20231b 76%, #0c0d0a 100%);
+  box-shadow:
+    0 18px 20px -8px rgba(0, 0, 0, .9),
+    inset 8px 0 14px -7px var(--c-glow);
+}
+.prop-mug::before {                /* rim + dark coffee */
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: -11px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 42%, #0a0c08 55%, #3a3d31 58%, #181a13 100%);
+}
+.prop-mug::after {                 /* handle */
+  content: '';
+  position: absolute;
+  right: -36px; top: 26px;
+  width: 46px; height: 64px;
+  border: 13px solid #23251c;
+  border-left: none;
+  border-radius: 0 28px 32px 0;
+}
+
+/* sticky note slapped on the case */
+.prop-note {
+  left: 1832px; top: 690px;
+  width: 92px; height: 98px;
+  transform: translateZ(46px) rotate(-5deg);
+  background: linear-gradient(160deg, #97915f 0%, #6c673f 70%, #565133 100%);
+  box-shadow: 0 7px 10px -4px rgba(0, 0, 0, .8);
+}
+.prop-note::before {               /* scribbles */
+  content: '';
+  position: absolute;
+  inset: 18px 12px 22px 12px;
+  background: repeating-linear-gradient(180deg, transparent 0 14px, rgba(20, 18, 8, .5) 14px 16px);
+}
+.prop-note::after {                /* curled corner */
+  content: '';
+  position: absolute;
+  right: 0; bottom: 0;
+  border-style: solid;
+  border-width: 0 0 20px 20px;
+  border-color: transparent transparent rgba(0, 0, 0, .45) transparent;
+}
+
+/* holotape */
+.prop-holotape {
+  left: 580px; top: 1276px;
+  width: 150px; height: 90px;
+  transform: translateZ(60px) rotate(6deg);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #3c3f3a 0%, #23251f 70%, #16170f 100%);
+  box-shadow: 0 12px 14px -6px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .1);
+}
+.prop-holotape::before {           /* label */
+  content: '';
+  position: absolute;
+  inset: 12px 18px 40px 18px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #8a5a22, #6a431a);
+  opacity: .8;
+}
+.prop-holotape::after {            /* tape window */
+  content: '';
+  position: absolute;
+  left: 34px; right: 34px; bottom: 12px;
+  height: 18px;
+  border-radius: 3px;
+  background: #0c0d0a;
+  box-shadow: inset 0 1px 3px #000;
+}
 
 /* ── Phosphor (content) layer ────────────────────────────────── */
 #phosphor {
@@ -136,6 +473,7 @@ body {
   animation: phosphor-flicker 5s steps(60) infinite;
   z-index: 1;
 }
+body.cold #phosphor { opacity: 0; animation: none; }
 @keyframes phosphor-flicker {
   0%, 100% { opacity: .985; }
   31% { opacity: .96; } 32% { opacity: 1; }
@@ -357,6 +695,8 @@ button.chip:hover { border-color: var(--c-text); color: var(--c-text); }
   font-size: min(1em, 3.4vw);
   line-height: 1.35;
 }
+/* inside the scene the glass is a fixed 1240px wide — 1em always fits */
+body:not(.plain) .hack-grid { font-size: 1em; }
 .hack-panel { white-space: pre; }
 .hack-row { display: block; }
 .hack-addr { color: var(--c-dim); margin-right: 1ch; }
@@ -384,6 +724,7 @@ button.chip:hover { border-color: var(--c-text); color: var(--c-text); }
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
+  transition: opacity .35s;
 }
 
 /* RGB aperture grille */
@@ -453,6 +794,58 @@ button.chip:hover { border-color: var(--c-text); color: var(--c-text); }
     inset 0 0 42px rgba(0, 0, 0, .5);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   PLAIN MODE — scenery off, screen stretched over the viewport.
+   Used by the FX OFF toggle and by FOCUS view on small screens.
+   ════════════════════════════════════════════════════════════════ */
+body.plain #viewport { perspective: none; }
+body.plain #tilt { transform: none !important; }
+body.plain #scene {
+  left: 0; top: 0;
+  margin: 0;
+  width: 100%; height: 100%;
+  transform: none !important;
+  transition: none;
+  --fs: clamp(17px, 2.1vmin, 22px);
+  --pad: clamp(14px, 3vmin, 38px);
+}
+body.plain :is(#wall, #desk, #desk-glow, #cable, #kbd, .prop, .crt-vents, #chin) { display: none; }
+body.plain #crt {
+  position: relative;
+  left: auto; top: auto;
+  width: min(1180px, 100%); height: 100%;
+  margin: 0 auto;
+  padding: clamp(0px, 2.5vmin, 28px) 0;
+  transform: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+body.plain .crt-bezel {
+  position: relative;
+  left: auto; top: auto;
+  width: 100%; height: 100%;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+body.plain #screen {
+  position: relative;
+  left: auto; top: auto;
+  width: 100%; height: 100%;
+  border-radius: clamp(6px, 1.4vmin, 18px);
+  box-shadow:
+    0 0 0 1px #000,
+    0 0 0 clamp(4px, .8vmin, 10px) #181a18,
+    0 0 0 clamp(5px, 1vmin, 12px) #000,
+    0 22px 70px -18px rgba(0, 0, 0, .9),
+    0 0 90px -30px var(--c-glow);
+}
+
+/* CRT FX off: kill every decorative layer, keep the terminal */
+body.fx-off .fx { display: none; }
+body.fx-off #phosphor { animation: none !important; }
+
 /* ── Noscript fallback ───────────────────────────────────────── */
 .noscript {
   position: fixed;
@@ -468,17 +861,19 @@ button.chip:hover { border-color: var(--c-text); color: var(--c-text); }
 }
 
 /* ── Small screens ───────────────────────────────────────────── */
-@media (max-width: 640px) {
-  #stage { padding: 0; }
-  #screen { border-radius: 0; box-shadow: none; }
-  #chin { display: none; }
+@media (max-width: 720px) {
+  body.plain #crt { padding: 0; }
+  body.plain #screen { border-radius: 0; box-shadow: none; }
   .hack-grid { flex-wrap: wrap; }
-  .hdr-right#clock { display: none; }
+  body.plain .hdr-right#clock { display: none; }
 }
 
 /* ── Reduced motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   #phosphor, #screen.on #phosphor, .fx-sweep, .ok, .cursor, #chin .led { animation: none !important; }
+  #screen.degauss { animation: none !important; }
+  #scene { transition: none !important; }
+  #tilt { transform: none !important; }
   .line.reveal { animation: none; opacity: 1; }
   #noise { display: none; }
 }
