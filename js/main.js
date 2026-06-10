@@ -8,18 +8,17 @@
      · digits 1-5:  switch tabs (when the prompt is empty)
      · arrows:      history on TERMINAL, row selection elsewhere
      · printable:   lands in the prompt, wherever you are
-     · escape:      clear prompt → back to STATS → back to the desk
    ════════════════════════════════════════════════════════════════ */
 
 import { sfx } from './audio.js';
-import { startNoise, startJolts } from './fx.js';
+import { startNoise, startJolts, powerOn } from './fx.js';
 import { runBoot } from './boot.js';
 import { ui, state } from './ui.js';
 import { terminal } from './terminal.js';
-import { scene } from './scene.js';
 
 const $ = (id) => document.getElementById(id);
 
+const screen = $('screen');
 const phosphor = $('phosphor');
 const bootEl = $('boot');
 const uiEl = $('ui');
@@ -32,7 +31,7 @@ window.addEventListener('pointerdown', () => sfx.unlock(), { capture: true });
 window.addEventListener('keydown', () => sfx.unlock(), { capture: true });
 
 window.addEventListener('keydown', (e) => {
-  if (!ready || !scene.powered || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!ready || e.metaKey || e.ctrlKey || e.altKey) return;
 
   // audible feedback for "real" keys
   if (e.key.length === 1 || e.key === 'Backspace' || e.key === 'Enter') sfx.key();
@@ -53,8 +52,7 @@ window.addEventListener('keydown', (e) => {
   switch (e.key) {
     case 'Escape':
       if (cli.value) terminal.setValue('');
-      else if (state.tab !== 'stats') ui.switchTab('stats');
-      else if (scene.view === 'zoom') scene.setView('desk');
+      else ui.switchTab('stats');
       return;
 
     case 'Enter':
@@ -87,9 +85,8 @@ window.addEventListener('keydown', (e) => {
 
 /* ── boot ──────────────────────────────────────────────────────── */
 (async function init() {
-  scene.init();
   startNoise($('noise'));
-  await scene.powerUp();
+  powerOn(screen);
   await runBoot(bootEl);
 
   bootEl.remove();
