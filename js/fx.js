@@ -15,7 +15,8 @@ export function startNoise(canvas) {
   let last = 0;
 
   function frame(t) {
-    if (t - last > 42 && !document.hidden) {
+    // canvas.offsetParent is null while FX OFF hides the overlay
+    if (t - last > 42 && !document.hidden && canvas.offsetParent !== null) {
       last = t;
       for (let i = 0; i < px.length; i += 4) {
         const v = (Math.random() * 255) | 0;
@@ -34,9 +35,11 @@ export function startJolts(phosphor) {
   if (REDUCED_MOTION) return;
   (function schedule() {
     setTimeout(() => {
-      phosphor.classList.remove('jolt');
-      void phosphor.offsetWidth; // restart the animation
-      phosphor.classList.add('jolt');
+      if (!document.body.classList.contains('fx-off')) {
+        phosphor.classList.remove('jolt');
+        void phosphor.offsetWidth; // restart the animation
+        phosphor.classList.add('jolt');
+      }
       schedule();
     }, 6000 + Math.random() * 12000);
   })();
